@@ -19,9 +19,9 @@
     <br />
     <a href="https://github.com/Jansen-w/BannerlordOverhaulFramework">Getting Started</a>
     ·
-    <a href="https://github.com/Jansen-w/BannerlordOverhaulFramework">Report a Bug</a>
+    <a href="https://github.com/Jansen-w/BannerlordOverhaulFramework/issues">Report a Bug</a>
     ·
-    <a href="https://github.com/Jansen-w/BannerlordOverhaulFramework">Request a Feature</a>
+    <a href="https://github.com/Jansen-w/BannerlordOverhaulFramework/issues">Request a Feature</a>
   </p>
 </div>
 
