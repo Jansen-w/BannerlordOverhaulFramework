@@ -19,5 +19,14 @@
                 <Tag key="IsNoRenderModeElement" value="false"/>
             </Tags>
         </SubModule>
+        <SubModule>
+            <Name value="BOF.Campaign"/>
+            <DLLName value="BOF.Campaign.dll"/>
+            <SubModuleClassType value="BOF.Campaign.SubModule"/>
+            <Tags>
+                <Tag key="DedicatedServerType" value="none"/>
+                <Tag key="IsNoRenderModeElement" value="false"/>
+            </Tags>
+        </SubModule>
     </SubModules>
 </Module>
