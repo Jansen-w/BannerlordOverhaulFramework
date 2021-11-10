@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Module>
+    <Name value="Bannerlord Overhaul Framework"/>
+    <Id value="BOF"/>
+    <Version value="e0.0.1"/>
+    <DefaultModule value="true"/>
+    <SingleplayerModule value="true"/>
+    <Official value="false"/>
+    <DependedModules>
+        <DependedModule Id="Native" DependentVersion="e1.6.5"/>
+    </DependedModules>
+    <SubModules>
+        <SubModule>
+            <Name value="BOF.Core"/>
+            <DLLName value="BOF.Core.dll"/>
+            <SubModuleClassType value="BOF.Core.SubModule"/>
+            <Tags>
+                <Tag key="DedicatedServerType" value="none"/>
+                <Tag key="IsNoRenderModeElement" value="false"/>
+            </Tags>
+        </SubModule>
+    </SubModules>
+</Module>
