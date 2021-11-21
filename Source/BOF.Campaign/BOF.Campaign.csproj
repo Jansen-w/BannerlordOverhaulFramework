@@ -186,6 +186,11 @@
         <Compile Include="BOFGameManager.cs" />
         <Compile Include="BOFCampaign.cs" />
         <Compile Include="CampaignGameStarter.cs" />
+        <Compile Include="CampaignSystem\CampaignTime.cs" />
+        <Compile Include="CampaignSystem\CampaignData.cs" />
+        <Compile Include="CampaignSystem\ILocatable.cs" />
+        <Compile Include="CampaignSystem\LocatorGrid.cs" />
+        <Compile Include="CampaignSystem\MapTimeTracker.cs" />
         <Compile Include="SubModule.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
