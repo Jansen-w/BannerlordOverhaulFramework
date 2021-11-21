@@ -185,9 +185,32 @@
     <ItemGroup>
         <Compile Include="BOFGameManager.cs" />
         <Compile Include="BOFCampaign.cs" />
+        <Compile Include="CampaignData.cs" />
         <Compile Include="CampaignGameStarter.cs" />
+        <Compile Include="CampaignTime.cs" />
+        <Compile Include="Character\CharacterObject.cs" />
+        <Compile Include="Character\Hero.cs" />
+        <Compile Include="Faction\Clan.cs" />
+        <Compile Include="Faction\IFaction.cs" />
+        <Compile Include="MapTimeTracker.cs" />
+        <Compile Include="Map\Entity\IMapEntity.cs" />
+        <Compile Include="Map\Entity\Settlement.cs" />
+        <Compile Include="Map\Event\MapEvent.cs" />
+        <Compile Include="Map\Event\MapEventSide.cs" />
+        <Compile Include="Party\LordPartyComponent.cs" />
+        <Compile Include="Party\MobileParty.cs" />
+        <Compile Include="Party\PartyBase.cs" />
+        <Compile Include="Party\PartyComponent.cs" />
+        <Compile Include="Party\Roster\FlattenedTroopRoster.cs" />
+        <Compile Include="Party\Roster\TroopRoster.cs" />
+        <Compile Include="Party\Roster\TroopRosterElement.cs" />
+        <Compile Include="Party\WarPartyComponent.cs" />
         <Compile Include="SubModule.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Include="Utility\ILocatable.cs" />
+        <Compile Include="Utility\IPartyVisual.cs" />
+        <Compile Include="Utility\LocatorGrid.cs" />
+        <Compile Include="Utility\NumberChangedCallback.cs" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\BOF.Core\BOF.Core.csproj">

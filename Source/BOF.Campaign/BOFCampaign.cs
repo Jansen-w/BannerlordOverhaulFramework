@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using BOF.Campaign.Party;
+using BOF.Campaign.Utility;
 using Helpers;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
@@ -9,7 +11,7 @@ using TaleWorlds.ModuleManager;
 using TaleWorlds.ObjectSystem;
 using TaleWorlds.SaveSystem;
 using TaleWorlds.SaveSystem.Load;
-using ManagedParameters = TaleWorlds.Core.ManagedParameters;
+
 
 namespace BOF.Campaign
 {
@@ -264,7 +266,7 @@ namespace BOF.Campaign
         public bool DesertionEnabled { get; set; }
         public int InitialPlayerTotalSkills { get; set; }
         public Vec2 DefaultStartingPosition => new Vec2(685.3f, 410.9f);
-        public static float CurrentTime => (float)CampaignTime.Now.ToHours;
+        public static float CurrentTime => (float)TaleWorlds.CampaignSystem.CampaignTime.Now.ToHours;
         public IList<CampaignEntityComponent> CampaignEntityComponents => _campaignEntitySystem.Components;
         public MBReadOnlyList<Hero> AliveHeroes => CampaignObjectManager.AliveHeroes;
         public MBReadOnlyList<Hero> DeadOrDisabledHeroes => CampaignObjectManager.DeadOrDisabledHeroes;
@@ -298,7 +300,7 @@ namespace BOF.Campaign
         public PartyUpgrader PartyUpgrader => _partyUpgrader;
         public IReadOnlyList<Track> DetectedTracks => _mapTracksCampaignBehavior?.DetectedTracks;
         public bool IsDay => !IsNight;
-        public bool IsNight => CampaignTime.Now.IsNightTime;
+        public bool IsNight => TaleWorlds.CampaignSystem.CampaignTime.Now.IsNightTime;
         public HeroTraitDeveloper PlayerTraitDeveloper { get; private set; }
         public override bool IsPartyWindowAccessibleAtMission => GameMode == CampaignGameMode.Campaign;
         internal IReadOnlyList<Town> AllTowns => _towns;
@@ -723,19 +725,19 @@ namespace BOF.Campaign
 
         private void CreateCampaignEvents()
         {
-            long numTicks = (CampaignTime.Now - CampaignData.CampaignStartTime).NumTicks;
-            CampaignTime initialWait1 = CampaignTime.Days(1f);
+            long numTicks = (TaleWorlds.CampaignSystem.CampaignTime.Now - TaleWorlds.CampaignSystem.CampaignData.CampaignStartTime).NumTicks;
+            TaleWorlds.CampaignSystem.CampaignTime initialWait1 = TaleWorlds.CampaignSystem.CampaignTime.Days(1f);
            
             if (numTicks % 864000000L != 0L)
-                initialWait1 = CampaignTime.Days(numTicks % 864000000L / 8.64E+08f);
-            _dailyTickEvent = CampaignPeriodicEventManager.CreatePeriodicEvent(CampaignTime.Days(1f), initialWait1);
+                initialWait1 = TaleWorlds.CampaignSystem.CampaignTime.Days(numTicks % 864000000L / 8.64E+08f);
+            _dailyTickEvent = CampaignPeriodicEventManager.CreatePeriodicEvent(TaleWorlds.CampaignSystem.CampaignTime.Days(1f), initialWait1);
             _dailyTickEvent.AddHandler(DailyTick);
-            CampaignTime initialWait2 = CampaignTime.Hours(0.5f);
+            TaleWorlds.CampaignSystem.CampaignTime initialWait2 = TaleWorlds.CampaignSystem.CampaignTime.Hours(0.5f);
             
             if (numTicks % 36000000L != 0L)
-                initialWait2 = CampaignTime.Hours(numTicks % 36000000L / 3.6E+07f);
+                initialWait2 = TaleWorlds.CampaignSystem.CampaignTime.Hours(numTicks % 36000000L / 3.6E+07f);
            
-            _hourlyTickEvent = CampaignPeriodicEventManager.CreatePeriodicEvent(CampaignTime.Hours(1f), initialWait2);
+            _hourlyTickEvent = CampaignPeriodicEventManager.CreatePeriodicEvent(TaleWorlds.CampaignSystem.CampaignTime.Hours(1f), initialWait2);
             _hourlyTickEvent.AddHandler(HourlyTick);
         }
 
@@ -834,7 +836,7 @@ namespace BOF.Campaign
             GameTexts.ClearInstance();
             _mapSceneWrapper?.Destroy();
             ConversationManager.Clear();
-            CampaignData.OnGameEnd();
+            TaleWorlds.CampaignSystem.CampaignData.OnGameEnd();
             MBTextManager.ClearAll();
             CampaignSiegeTestStatic.Destruct();
             MBSaveLoad.OnGameDestroy();
