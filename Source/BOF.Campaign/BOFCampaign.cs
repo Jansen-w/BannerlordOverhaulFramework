@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using BOF.Campaign.Party;
-using BOF.Campaign.Utility;
 using Helpers;
+using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.Encyclopedia;
+using TaleWorlds.CampaignSystem.GameMenus;
+using TaleWorlds.CampaignSystem.SandBox;
+using TaleWorlds.CampaignSystem.SandBox.CampaignBehaviors;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
-using TaleWorlds.Localization;
-using TaleWorlds.ModuleManager;
 using TaleWorlds.ObjectSystem;
-using TaleWorlds.SaveSystem;
-using TaleWorlds.SaveSystem.Load;
-
+using Debug = System.Diagnostics.Debug;
+using ManagedParameters = TaleWorlds.Core.ManagedParameters;
 
 namespace BOF.Campaign
 {
@@ -32,22 +33,34 @@ namespace BOF.Campaign
             SafeMode = 1,
         }
 
-        // TODO: Let's get rid of as many of these variables as possible
         public const float ConfigTimeMultiplier = 0.25f;
+
+        /*[SaveableField(64)]*/
         private readonly LogEntryHistory _logEntryHistory = new LogEntryHistory();
+
+        /*[SaveableField(2)]*/
         public readonly CampaignOptions Options;
+
+        /*[SaveableField(61)]*/
         private PartyBase _cameraFollowParty;
+
+        /*[SaveableField(7)]*/
         private ICampaignBehaviorManager _campaignBehaviorManager;
+
+        /*[SaveableField(51)]*/
         private EntitySystem<CampaignEntityComponent> _campaignEntitySystem;
+
+        /*[SaveableField(210)]*/
         private CampaignPeriodicEventManager _campaignPeriodicEventManager;
         private List<Town> _castles;
         private MBReadOnlyList<CharacterObject> _characters;
+
         private MBReadOnlyList<Concept> _concepts;
+
         private ConversationManager _conversationManager;
         private int _curSessionFrame;
         private MBCampaignEvent _dailyTickEvent;
-        [CachedData] 
-        private float _dt;
+        [CachedData] private float _dt;
         private EncyclopediaManager _encyclopediaManager;
         private GameLoadingType _gameLoadingType;
         private GameModels _gameModels;
@@ -59,170 +72,307 @@ namespace BOF.Campaign
         private Monster _humanMonsterSettlementFast;
         private Monster _humanMonsterSettlementSlow;
         private InventoryManager _inventoryManager;
+
+        /*[SaveableField(53)]*/
         private bool _isMainPartyWaiting;
         private MBReadOnlyList<ItemModifierGroup> _itemModifierGroups;
         private MBReadOnlyList<ItemModifier> _itemModifiers;
-        [CachedData] 
-        private int _lastNonZeroDtFrame;
+        [CachedData] private int _lastNonZeroDtFrame;
+
+        /*[SaveableField(79)]*/
         private int _lastPartyIndex;
+
         private IMapScene _mapSceneWrapper;
         private IMapTracksCampaignBehavior _mapTracksCampaignBehavior;
         private LocatorGrid<MobileParty> _mobilePartyLocator;
-        private CampaignTickPartyDataCache _mobilePartyTickDataCache = new CampaignTickPartyDataCache();
+
+        private CampaignTickPartyDataCache _mobilePartyTickDataCache =
+            new CampaignTickPartyDataCache();
+
+        /*[SaveableField(29)]*/
         private int _numGameMenusCreated;
         private PartyScreenManager _partyScreenManager;
         public PartyUpgrader _partyUpgrader = new PartyUpgrader();
+
+        /*[SaveableField(77)]*/
         private Dictionary<CharacterObject, FormationClass> _playerFormationPreferences;
+
+        /*[SaveableField(78)]*/
         private List<string> _previouslyUsedModules;
+
         private LocatorGrid<Settlement> _settlementLocator;
         private int _stepNo;
         private CampaignTimeControlMode _timeControlMode;
         private List<Town> _towns;
         private List<Village> _villages;
         private MBReadOnlyList<WorkshopType> _workshops;
+
+        /*[SaveableField(44)]*/
         public PartyBase autoEnterTown;
+
+        /*[SaveableField(23)]*/
         public int CheatFindItemRangeBegin;
         public ConversationContext CurrentConversationContext;
+
+        /*[SaveableField(49)]*/
         public GameLogs GameLogs = new GameLogs();
+
+        /*[SaveableField(34)]*/
         public bool GameStarted;
         public int InfluenceValueTermsOfGold = 10;
+
+        /*[SaveableField(27)]*/
         public bool IsInitializedSinglePlayerReferences;
+
+        /*[SaveableField(65)]*/
         public KingdomManager KingdomManager;
+
+        /*[SaveableField(31)]*/
         public CampaignTimeControlMode LastTimeControlMode = CampaignTimeControlMode.UnstoppablePlay;
+
+        /*[SaveableField(30)]*/
+        public int MainHeroIllDays = -1;
         public float MaxSettlementX;
+
         public float MaxSettlementY;
         public float MinSettlementX;
         public float MinSettlementY;
+
         public MBReadOnlyDictionary<CharacterObject, FormationClass> PlayerFormationPreferences;
+
+        /*[SaveableField(13)]*/
         public ITournamentManager TournamentManager;
+
         public bool UseFreeCameraAtMapScreen;
 
         public BOFCampaign(CampaignGameMode gameMode)
         {
-            GameMode = gameMode;
-            Options = new CampaignOptions();
-            MapTimeTracker = new MapTimeTracker(CampaignData.CampaignStartTime);
-            CampaignStartTime = MapTimeTracker.Now;
-            CampaignObjectManager = new CampaignObjectManager();
-            CurrentConversationContext = ConversationContext.Default;
-            QuestManager = new QuestManager();
-            IssueManager = new IssueManager();
-            FactionManager = new FactionManager();
-            CharacterRelationManager = new CharacterRelationManager();
-            Romance = new Romance();
-            PlayerCaptivity = new PlayerCaptivity();
-            BarterManager = new BarterManager();
-            AdjustedRandom = new AdjustedRandom();
-            GameMenuCallbackManager = new GameMenuCallbackManager();
+            this.GameMode = gameMode;
+            this.Options = new CampaignOptions();
+            this.MapTimeTracker = new MapTimeTracker(CampaignData.CampaignStartTime);
+            this.CampaignStartTime = this.MapTimeTracker.Now;
+            this.CampaignObjectManager = new CampaignObjectManager();
+            this.CurrentConversationContext = ConversationContext.Default;
+            this.QuestManager = new QuestManager();
+            this.IssueManager = new IssueManager();
+            this.FactionManager = new FactionManager();
+            this.CharacterRelationManager = new CharacterRelationManager();
+            this.Romance = new Romance();
+            this.PlayerCaptivity = new PlayerCaptivity();
+            this.BarterManager = new BarterManager();
+            this.AdjustedRandom = new AdjustedRandom();
+            this.GameMenuCallbackManager = new GameMenuCallbackManager();
         }
 
         public static float MapDiagonal { get; private set; }
-        public static Vec2 MapMinimumPosition { get; private set; }
-        public static Vec2 MapMaximumPosition { get; private set; }
-        public static float MapMaximumHeight { get; private set; }
-        public static float AverageDistanceBetweenTwoTowns { get; private set; }
-        public IReadOnlyList<string> PreviouslyUsedModules => _previouslyUsedModules;
 
-        public CampaignEventDispatcher CampaignEventDispatcher { get; private set; }
+        public static Vec2 MapMinimumPosition { get; private set; }
+
+        public static Vec2 MapMaximumPosition { get; private set; }
+
+        public static float MapMaximumHeight { get; private set; }
+
+        public static float AverageDistanceBetweenTwoTowns { get; private set; }
+
+        public IReadOnlyList<string> PreviouslyUsedModules => (IReadOnlyList<string>)this._previouslyUsedModules;
+
+        internal CampaignEventDispatcher CampaignEventDispatcher { get; private set; }
+
+        /*[SaveableProperty(80)]*/
         public string UniqueGameId { get; private set; }
+
         public SaveHandler SaveHandler { get; private set; }
-        public override bool SupportsSaving => GameMode == CampaignGameMode.Campaign;
+
+        public override bool SupportsSaving => this.GameMode == CampaignGameMode.Campaign;
+
+        /*[SaveableProperty(211)]*/
         public CampaignObjectManager CampaignObjectManager { get; private set; }
-        public override bool IsDevelopment => GameMode == CampaignGameMode.Tutorial;
+
+        public override bool IsDevelopment => this.GameMode == CampaignGameMode.Tutorial;
+
+        /*[SaveableProperty(3)]*/
         public bool IsCraftingEnabled { get; set; } = true;
+
+        /*[SaveableProperty(4)]*/
         public bool IsBannerEditorEnabled { get; set; } = true;
+
+        /*[SaveableProperty(5)]*/
         public bool IsFaceGenEnabled { get; set; } = true;
-        public ICampaignBehaviorManager CampaignBehaviorManager => _campaignBehaviorManager;
+
+        public ICampaignBehaviorManager CampaignBehaviorManager => this._campaignBehaviorManager;
+
+        /*[SaveableProperty(8)]*/
         public QuestManager QuestManager { get; private set; }
+
+        /*[SaveableProperty(9)]*/
         public IssueManager IssueManager { get; private set; }
+
+        /*[SaveableProperty(11)]*/
         public FactionManager FactionManager { get; private set; }
+
+        /*[SaveableProperty(12)]*/
         public CharacterRelationManager CharacterRelationManager { get; private set; }
+
+        /*[SaveableProperty(14)]*/
         public Romance Romance { get; private set; }
+
+        /*[SaveableProperty(16)]*/
         public PlayerCaptivity PlayerCaptivity { get; private set; }
-        public Clan PlayerDefaultFaction { get; set; }
+
+        /*[SaveableProperty(17)]*/
+        internal Clan PlayerDefaultFaction { get; set; }
+
         public ICampaignMissionManager CampaignMissionManager { get; set; }
+
         public ICampaignMapConversation CampaignMapConversationManager { get; set; }
+
         public IMapSceneCreator MapSceneCreator { get; set; }
+
+        /*[SaveableProperty(21)]*/
         public AdjustedRandom AdjustedRandom { get; private set; }
-        public override bool IsInventoryAccessibleAtMission => GameMode == CampaignGameMode.Tutorial;
+
+        public override bool IsInventoryAccessibleAtMission => this.GameMode == CampaignGameMode.Tutorial;
+
+        /*[SaveableProperty(22)]*/
         public GameMenuCallbackManager GameMenuCallbackManager { get; private set; }
+
         public VisualCreator VisualCreator { get; set; }
-        public Monster HumanMonsterSettlement => _humanMonsterSettlement ?? (_humanMonsterSettlement = CurrentGame.ObjectManager.GetObject<Monster>("human_settlement"));
-        public Monster HumanChildMonster => _humanChildMonster ?? (_humanChildMonster = CurrentGame.ObjectManager.GetObject<Monster>("human_child"));
-        public Monster HumanMonsterSettlementSlow => _humanMonsterSettlementSlow ?? (_humanMonsterSettlementSlow = CurrentGame.ObjectManager.GetObject<Monster>("human_settlement_slow"));
-        public Monster HumanMonsterSettlementFast => _humanMonsterSettlementFast ?? (_humanMonsterSettlementFast = CurrentGame.ObjectManager.GetObject<Monster>("human_settlement_fast"));
-        public Monster HumanMonsterMap => _humanMonsterMap ??(_humanMonsterMap = CurrentGame.ObjectManager.GetObject<Monster>("human_map"));
+
+        public Monster HumanMonsterSettlement => this._humanMonsterSettlement ?? (this._humanMonsterSettlement =
+            this.CurrentGame.ObjectManager.GetObject<Monster>("human_settlement"));
+
+        public Monster HumanChildMonster => this._humanChildMonster ??
+                                            (this._humanChildMonster =
+                                                this.CurrentGame.ObjectManager.GetObject<Monster>("human_child"));
+
+        public Monster HumanMonsterSettlementSlow => this._humanMonsterSettlementSlow ??
+                                                     (this._humanMonsterSettlementSlow =
+                                                         this.CurrentGame.ObjectManager.GetObject<Monster>(
+                                                             "human_settlement_slow"));
+
+        public Monster HumanMonsterSettlementFast => this._humanMonsterSettlementFast ??
+                                                     (this._humanMonsterSettlementFast =
+                                                         this.CurrentGame.ObjectManager.GetObject<Monster>(
+                                                             "human_settlement_fast"));
+
+        public Monster HumanMonsterMap => this._humanMonsterMap ??
+                                          (this._humanMonsterMap =
+                                              this.CurrentGame.ObjectManager.GetObject<Monster>("human_map"));
+
+        /*[SaveableProperty(28)]*/
         public MapStateData MapStateData { get; private set; }
+
         public DefaultPerks DefaultPerks { get; private set; }
+
         public DefaultTraits DefaultTraits { get; private set; }
+
         public DefaultPolicies DefaultPolicies { get; private set; }
+
         public DefaultBuildingTypes DefaultBuildingTypes { get; private set; }
+
         public DefaultIssueEffects DefaultIssueEffects { get; private set; }
+
         public DefaultSiegeStrategies DefaultSiegeStrategies { get; private set; }
+
         internal MBReadOnlyList<PerkObject> AllPerks { get; private set; }
+
         public PlayerUpdateTracker PlayerUpdateTracker { get; private set; }
+
         public DefaultSkillEffects DefaultSkillEffects { get; private set; }
+
         public DefaultVillageTypes DefaultVillageTypes { get; private set; }
+
         internal MBReadOnlyList<TraitObject> AllTraits { get; private set; }
+
         public DefaultFeats DefaultFeats { get; private set; }
+
         internal MBReadOnlyList<PolicyObject> AllPolicies { get; private set; }
+
         internal MBReadOnlyList<BuildingType> AllBuildingTypes { get; private set; }
+
         internal MBReadOnlyList<IssueEffect> AllIssueEffects { get; private set; }
+
         internal MBReadOnlyList<SiegeStrategy> AllSiegeStrategies { get; private set; }
+
         internal MBReadOnlyList<VillageType> AllVillageTypes { get; private set; }
+
         internal MBReadOnlyList<SkillEffect> AllSkillEffects { get; private set; }
+
         internal MBReadOnlyList<FeatObject> AllFeats { get; private set; }
+
         internal MBReadOnlyList<SkillObject> AllSkills { get; private set; }
+
         internal MBReadOnlyList<SiegeEngineType> AllSiegeEngineTypes { get; private set; }
+
         internal MBReadOnlyList<ItemCategory> AllItemCategories { get; private set; }
+
         internal MBReadOnlyList<CharacterAttribute> AllCharacterAttributes { get; private set; }
+
         internal MBReadOnlyList<ItemObject> AllItems { get; private set; }
+
+        /*[SaveableProperty(100)]*/
         internal MapTimeTracker MapTimeTracker { get; private set; }
+
         public float RestTime { get; internal set; }
+
         public bool TimeControlModeLock { get; private set; }
 
         public CampaignTimeControlMode TimeControlMode
         {
-            get => _timeControlMode;
+            get => this._timeControlMode;
             set
             {
-                if (TimeControlModeLock || value == _timeControlMode)
+                if (this.TimeControlModeLock || value == this._timeControlMode)
                     return;
-                _timeControlMode = value;
+                this._timeControlMode = value;
             }
         }
 
         public bool IsMapTooltipLongForm { get; set; }
+
         public float SpeedUpMultiplier { get; set; } = 4f;
-        public float CampaignDt => _dt;
+
+        public float CampaignDt => this._dt;
+
         public bool TrueSight { get; set; }
-        public static BOFCampaign Current { get; private set; }
+
+        public static Campaign Current { get; private set; }
+
+        /*[SaveableProperty(36)]*/
         public CampaignTime CampaignStartTime { get; private set; }
+
+        /*[SaveableProperty(37)]*/
         public CampaignGameMode GameMode { get; private set; }
+
         public GameMenuManager GameMenuManager { get; private set; }
-        public GameModels Models => _gameModels;
-        public BOFGameManager SandBoxManager { get; private set; }
-        public GameLoadingType CampaignGameLoadingType => _gameLoadingType;
+
+        public GameModels Models => this._gameModels;
+
+        public SandBoxManager SandBoxManager { get; private set; }
+
+        public GameLoadingType CampaignGameLoadingType => this._gameLoadingType;
+
+        /*[SaveableProperty(40)]*/
         public SiegeEventManager SiegeEventManager { get; internal set; }
+
+        /*[SaveableProperty(41)]*/
         public MapEventManager MapEventManager { get; internal set; }
-        public CampaignEvents CampaignEvents { get; private set; }
+
+        internal CampaignEvents CampaignEvents { get; private set; }
 
         public MenuContext CurrentMenuContext
         {
             get
             {
-                GameStateManager gameStateManager = CurrentGame.GameStateManager;
-                
+                GameStateManager gameStateManager = this.CurrentGame.GameStateManager;
                 if (gameStateManager.ActiveState is TutorialState activeState1)
                     return activeState1.MenuContext;
-                
                 if (gameStateManager.ActiveState is MapState activeState2)
                     return activeState2.MenuContext;
-                
                 return gameStateManager.ActiveState.Predecessor != null &&
                        gameStateManager.ActiveState.Predecessor is MapState predecessor
                     ? predecessor.MenuContext
-                    : null;
+                    : (MenuContext)null;
             }
         }
 
@@ -230,88 +380,138 @@ namespace BOF.Campaign
 
         public bool IsMainPartyWaiting
         {
-            get => _isMainPartyWaiting;
-            private set => _isMainPartyWaiting = value;
+            get => this._isMainPartyWaiting;
+            private set => this._isMainPartyWaiting = value;
         }
 
+        /*[SaveableProperty(45)]*/
         private int _curMapFrame { get; set; }
 
-        public LocatorGrid<Settlement> SettlementLocator
+        internal LocatorGrid<Settlement> SettlementLocator
         {
             get
             {
-                if (_settlementLocator == null)
-                    _settlementLocator = new LocatorGrid<Settlement>();
-                return _settlementLocator;
+                if (this._settlementLocator == null)
+                    this._settlementLocator = new LocatorGrid<Settlement>();
+                return this._settlementLocator;
             }
         }
 
-        public LocatorGrid<MobileParty> MobilePartyLocator
+        internal LocatorGrid<MobileParty> MobilePartyLocator
         {
             get
             {
-                if (_mobilePartyLocator == null)
-                    _mobilePartyLocator = new LocatorGrid<MobileParty>();
-                return _mobilePartyLocator;
+                if (this._mobilePartyLocator == null)
+                    this._mobilePartyLocator = new LocatorGrid<MobileParty>();
+                return this._mobilePartyLocator;
             }
         }
 
-        public IMapScene MapSceneWrapper => _mapSceneWrapper;
-        public PlayerEncounter PlayerEncounter { get; set; }
-        [CachedData] 
-        internal LocationEncounter LocationEncounter { get; set; }
+        public IMapScene MapSceneWrapper => this._mapSceneWrapper;
+
+        /*[SaveableProperty(54)]*/
+        public PlayerEncounter PlayerEncounter { get; internal set; }
+
+        [CachedData] internal LocationEncounter LocationEncounter { get; set; }
+
         internal NameGenerator NameGenerator { get; private set; }
+
+        /*[SaveableProperty(58)]*/
         public BarterManager BarterManager { get; private set; }
+
+        /*[SaveableProperty(69)]*/
         public bool IsMainHeroDisguised { get; set; }
+
+        /*[SaveableProperty(70)]*/
         public bool DesertionEnabled { get; set; }
+
+        /*[SaveableProperty(76)]*/
         public int InitialPlayerTotalSkills { get; set; }
+
         public Vec2 DefaultStartingPosition => new Vec2(685.3f, 410.9f);
-        public static float CurrentTime => (float)TaleWorlds.CampaignSystem.CampaignTime.Now.ToHours;
-        public IList<CampaignEntityComponent> CampaignEntityComponents => _campaignEntitySystem.Components;
-        public MBReadOnlyList<Hero> AliveHeroes => CampaignObjectManager.AliveHeroes;
-        public MBReadOnlyList<Hero> DeadOrDisabledHeroes => CampaignObjectManager.DeadOrDisabledHeroes;
-        public MBReadOnlyList<MobileParty> MobileParties => CampaignObjectManager.MobileParties;
-        public MBReadOnlyList<Settlement> Settlements => CampaignObjectManager.Settlements;
-        public IEnumerable<IFaction> Factions => CampaignObjectManager.Factions;
-        public MBReadOnlyList<Kingdom> Kingdoms => CampaignObjectManager.Kingdoms;
-        public MBReadOnlyList<Clan> Clans => CampaignObjectManager.Clans;
-        public MBReadOnlyList<CharacterObject> Characters => _characters;
-        public MBReadOnlyList<WorkshopType> Workshops => _workshops;
-        public MBReadOnlyList<ItemModifier> ItemModifiers => _itemModifiers;
-        public MBReadOnlyList<ItemModifierGroup> ItemModifierGroups => _itemModifierGroups;
-        public MBReadOnlyList<Concept> Concepts => _concepts;
+
+        public static float CurrentTime => (float)CampaignTime.Now.ToHours;
+
+        public IList<CampaignEntityComponent> CampaignEntityComponents => this._campaignEntitySystem.Components;
+
+        public MBReadOnlyList<Hero> AliveHeroes => this.CampaignObjectManager.AliveHeroes;
+
+        public MBReadOnlyList<Hero> DeadOrDisabledHeroes => this.CampaignObjectManager.DeadOrDisabledHeroes;
+
+        public MBReadOnlyList<MobileParty> MobileParties => this.CampaignObjectManager.MobileParties;
+
+        public MBReadOnlyList<Settlement> Settlements => this.CampaignObjectManager.Settlements;
+
+        public IEnumerable<IFaction> Factions => (IEnumerable<IFaction>)this.CampaignObjectManager.Factions;
+
+        public MBReadOnlyList<Kingdom> Kingdoms => this.CampaignObjectManager.Kingdoms;
+
+        public MBReadOnlyList<Clan> Clans => this.CampaignObjectManager.Clans;
+
+        public MBReadOnlyList<CharacterObject> Characters => this._characters;
+
+        public MBReadOnlyList<WorkshopType> Workshops => this._workshops;
+
+        public MBReadOnlyList<ItemModifier> ItemModifiers => this._itemModifiers;
+
+        public MBReadOnlyList<ItemModifierGroup> ItemModifierGroups => this._itemModifierGroups;
+
+        public MBReadOnlyList<Concept> Concepts => this._concepts;
+
         public MBReadOnlyList<CharacterObject> TemplateCharacters { get; private set; }
+
         public MBReadOnlyList<CharacterObject> ChildTemplateCharacters { get; private set; }
+
+        /*[SaveableProperty(60)]*/
         public MobileParty MainParty { get; private set; }
 
         public PartyBase CameraFollowParty
         {
-            get => _cameraFollowParty;
-            set => _cameraFollowParty = value;
+            get => this._cameraFollowParty;
+            set => this._cameraFollowParty = value;
         }
-        
+
+        /*[SaveableProperty(62)]*/
         public CampaignInformationManager CampaignInformationManager { get; set; }
+
+        /*[SaveableProperty(63)]*/
         public VisualTrackerManager VisualTrackerManager { get; set; }
-        public LogEntryHistory LogEntryHistory => _logEntryHistory;
-        public EncyclopediaManager EncyclopediaManager => _encyclopediaManager;
-        public InventoryManager InventoryManager => _inventoryManager;
-        public PartyScreenManager PartyScreenManager => _partyScreenManager;
-        public ConversationManager ConversationManager => _conversationManager;
-        public PartyUpgrader PartyUpgrader => _partyUpgrader;
-        public IReadOnlyList<Track> DetectedTracks => _mapTracksCampaignBehavior?.DetectedTracks;
-        public bool IsDay => !IsNight;
-        public bool IsNight => TaleWorlds.CampaignSystem.CampaignTime.Now.IsNightTime;
+
+        public LogEntryHistory LogEntryHistory => this._logEntryHistory;
+
+        public EncyclopediaManager EncyclopediaManager => this._encyclopediaManager;
+
+        public InventoryManager InventoryManager => this._inventoryManager;
+
+        public PartyScreenManager PartyScreenManager => this._partyScreenManager;
+
+        public ConversationManager ConversationManager => this._conversationManager;
+
+        public PartyUpgrader PartyUpgrader => this._partyUpgrader;
+
+        public IReadOnlyList<Track> DetectedTracks => this._mapTracksCampaignBehavior?.DetectedTracks;
+
+        public bool IsDay => !this.IsNight;
+
+        public bool IsNight => CampaignTime.Now.IsNightTime;
+
+        /*[SaveableProperty(68)]*/
         public HeroTraitDeveloper PlayerTraitDeveloper { get; private set; }
-        public override bool IsPartyWindowAccessibleAtMission => GameMode == CampaignGameMode.Campaign;
-        internal IReadOnlyList<Town> AllTowns => _towns;
-        internal IReadOnlyList<Town> AllCastles => _castles;
-        internal IReadOnlyList<Village> AllVillages => _villages;
-        internal IReadOnlyList<Hideout> AllHideouts => _hideouts;
+
+        public override bool IsPartyWindowAccessibleAtMission => this.GameMode == CampaignGameMode.Campaign;
+
+        internal IReadOnlyList<Town> AllTowns => (IReadOnlyList<Town>)this._towns;
+
+        internal IReadOnlyList<Town> AllCastles => (IReadOnlyList<Town>)this._castles;
+
+        internal IReadOnlyList<Village> AllVillages => (IReadOnlyList<Village>)this._villages;
+
+        internal IReadOnlyList<Hideout> AllHideouts => (IReadOnlyList<Hideout>)this._hideouts;
 
         public int CreateGameMenuIndex()
         {
-            int gameMenusCreated = _numGameMenusCreated;
-            ++_numGameMenusCreated;
+            int gameMenusCreated = this._numGameMenusCreated;
+            ++this._numGameMenusCreated;
             return gameMenusCreated;
         }
 
@@ -319,119 +519,107 @@ namespace BOF.Campaign
 
         public void InitializeMainParty()
         {
-            InitializeSinglePlayerReferences();
-            MainParty.InitializeMobileParty(CurrentGame.ObjectManager.GetObject<PartyTemplateObject>("main_hero_party_template"), DefaultStartingPosition, 0.0f);
-            MainParty.ActualClan = Clan.PlayerClan;
-            MainParty.PartyComponent = new LordPartyComponent(Hero.MainHero);
-            MainParty.ItemRoster.AddToCounts(DefaultItems.Grain, 1);
+            this.InitializeSinglePlayerReferences();
+            this.MainParty.InitializeMobileParty(
+                this.CurrentGame.ObjectManager.GetObject<PartyTemplateObject>("main_hero_party_template"),
+                this.DefaultStartingPosition, 0.0f);
+            this.MainParty.ActualClan = Clan.PlayerClan;
+            this.MainParty.PartyComponent = (PartyComponent)new LordPartyComponent(Hero.MainHero);
+            this.MainParty.ItemRoster.AddToCounts(DefaultItems.Grain, 1);
         }
 
         [LoadInitializationCallback]
         private void OnLoad(MetaData metaData, ObjectLoadData objectLoadData)
         {
-            _campaignEntitySystem = new EntitySystem<CampaignEntityComponent>();
-            _partyUpgrader = new PartyUpgrader();
-
-            if (BarterManager == null)
-            {
-                BarterManager = new BarterManager();
-            }
-                
-            SpeedUpMultiplier = 4f;
-            _mobilePartyTickDataCache = new CampaignTickPartyDataCache();
-
-            if (_playerFormationPreferences == null)
-            {
-                _playerFormationPreferences = new Dictionary<CharacterObject, FormationClass>();
-            }
-                
-            PlayerFormationPreferences = _playerFormationPreferences.GetReadOnlyDictionary();
-            
-            if (CampaignObjectManager != null)
+            this._campaignEntitySystem = new EntitySystem<CampaignEntityComponent>();
+            this._partyUpgrader = new PartyUpgrader();
+            if (this.BarterManager == null)
+                this.BarterManager = new BarterManager();
+            this.SpeedUpMultiplier = 4f;
+            this._mobilePartyTickDataCache = new Campaign.CampaignTickPartyDataCache();
+            if (this._playerFormationPreferences == null)
+                this._playerFormationPreferences = new Dictionary<CharacterObject, FormationClass>();
+            this.PlayerFormationPreferences =
+                this._playerFormationPreferences.GetReadOnlyDictionary<CharacterObject, FormationClass>();
+            if (this.CampaignObjectManager != null)
                 return;
-            
-            CampaignObjectManager = new CampaignObjectManager();
-            CampaignObjectManager.SetForceCopyListsForSaveCompability();
+            this.CampaignObjectManager = new CampaignObjectManager();
+            this.CampaignObjectManager.SetForceCopyListsForSaveCompability();
         }
 
         private void InitializeForSavedGame()
         {
-            foreach (CampaignEntityComponent component in _campaignEntitySystem.GetComponents())
+            foreach (CampaignEntityComponent component in this._campaignEntitySystem.GetComponents())
                 component.OnLoadSavedGame();
-            
             foreach (Settlement settlement in Settlement.All)
                 settlement.Party.OnFinishLoadState();
-            
-            foreach (MobileParty mobileParty in MobileParties.ToList())
+            foreach (MobileParty mobileParty in this.MobileParties.ToList<MobileParty>())
                 mobileParty.Party.OnFinishLoadState();
-            
             foreach (Settlement settlement in Settlement.All)
                 settlement.OnFinishLoadState();
-            
             if (Game.Current.GameStateManager.ActiveState is MapState activeState)
                 activeState.OnLoad();
-            
-            GameMenuCallbackManager.OnGameLoad();
-            IssueManager.InitializeForSavedGame();
-            MinSettlementX = 1000f;
-            MinSettlementY = 1000f;
-            
+            this.GameMenuCallbackManager.OnGameLoad();
+            this.IssueManager.InitializeForSavedGame();
+            this.MinSettlementX = 1000f;
+            this.MinSettlementY = 1000f;
             foreach (Settlement settlement in Settlement.All)
             {
-                if (settlement.Position2D.x < (double)MinSettlementX)
-                    MinSettlementX = settlement.Position2D.x;
-                if (settlement.Position2D.y < (double)MinSettlementY)
-                    MinSettlementY = settlement.Position2D.y;
-                if (settlement.Position2D.x > (double)MaxSettlementX)
-                    MaxSettlementX = settlement.Position2D.x;
-                if (settlement.Position2D.y > (double)MaxSettlementY)
-                    MaxSettlementY = settlement.Position2D.y;
+                if ((double)settlement.Position2D.x < (double)this.MinSettlementX)
+                    this.MinSettlementX = settlement.Position2D.x;
+                if ((double)settlement.Position2D.y < (double)this.MinSettlementY)
+                    this.MinSettlementY = settlement.Position2D.y;
+                if ((double)settlement.Position2D.x > (double)this.MaxSettlementX)
+                    this.MaxSettlementX = settlement.Position2D.x;
+                if ((double)settlement.Position2D.y > (double)this.MaxSettlementY)
+                    this.MaxSettlementY = settlement.Position2D.y;
             }
         }
 
         private void OnGameLoaded(CampaignGameStarter starter)
         {
-            ObjectManager.PreAfterLoad();
-            CampaignObjectManager.PreAfterLoad();
-            ObjectManager.AfterLoad();
-            CampaignObjectManager.AfterLoad();
-            CharacterRelationManager.AfterLoad();
+            this.ObjectManager.PreAfterLoad();
+            this.CampaignObjectManager.PreAfterLoad();
+            this.ObjectManager.AfterLoad();
+            this.CampaignObjectManager.AfterLoad();
+            this.CharacterRelationManager.AfterLoad();
             CampaignEventDispatcher.Instance.OnGameEarlyLoaded(starter);
             CampaignEventDispatcher.Instance.OnGameLoaded(starter);
-            InitializeForSavedGame();
+            this.InitializeForSavedGame();
         }
 
         private void OnDataLoadFinished(CampaignGameStarter starter)
         {
-            _towns = Settlement.All.Where(x => x.IsTown).Select(x => x.Town).ToList();
-            _castles = Settlement.All.Where(x => x.IsCastle).Select(x => x.Town).ToList();
-            _villages = Settlement.All.Where(x => x.Village != null).Select(x => x.Village).ToList();
-            _hideouts = Settlement.All.Where(x => x.IsHideout).Select(x => x.Hideout).ToList();
-            
-            if (_campaignPeriodicEventManager == null)
-                _campaignPeriodicEventManager = new CampaignPeriodicEventManager();
-            
-            _campaignPeriodicEventManager.InitializeTickers();
-            CreateCampaignEvents();
+            this._towns = Settlement.All.Where<Settlement>((Func<Settlement, bool>)(x => x.IsTown))
+                .Select<Settlement, Town>((Func<Settlement, Town>)(x => x.Town)).ToList<Town>();
+            this._castles = Settlement.All.Where<Settlement>((Func<Settlement, bool>)(x => x.IsCastle))
+                .Select<Settlement, Town>((Func<Settlement, Town>)(x => x.Town)).ToList<Town>();
+            this._villages = Settlement.All.Where<Settlement>((Func<Settlement, bool>)(x => x.Village != null))
+                .Select<Settlement, Village>((Func<Settlement, Village>)(x => x.Village)).ToList<Village>();
+            this._hideouts = Settlement.All.Where<Settlement>((Func<Settlement, bool>)(x => x.IsHideout))
+                .Select<Settlement, Hideout>((Func<Settlement, Hideout>)(x => x.Hideout)).ToList<Hideout>();
+            if (this._campaignPeriodicEventManager == null)
+                this._campaignPeriodicEventManager = new CampaignPeriodicEventManager();
+            this._campaignPeriodicEventManager.InitializeTickers();
+            this.CreateCampaignEvents();
         }
 
         private void OnSessionStart(CampaignGameStarter starter)
         {
             CampaignEventDispatcher.Instance.OnSessionStart(starter);
             CampaignEventDispatcher.Instance.OnAfterSessionStart(starter);
-            CampaignEvents.DailyTickSettlementEvent.AddNonSerializedListener(this, DailyTickSettlement);
-            ConversationManager.Build();
-            
-            foreach (Settlement settlement in Settlements)
+            CampaignEvents.DailyTickSettlementEvent.AddNonSerializedListener((object)this,
+                new Action<Settlement>(this.DailyTickSettlement));
+            this.ConversationManager.Build();
+            foreach (Settlement settlement in this.Settlements)
                 settlement.OnSessionStart();
-            
-            IsCraftingEnabled = true;
-            IsBannerEditorEnabled = true;
-            IsFaceGenEnabled = true;
-            MapEventManager.OnAfterLoad();
-            KingdomManager.RegisterEvents();
-            KingdomManager.OnNewGameCreated();
-            CampaignInformationManager.RegisterEvents();
+            this.IsCraftingEnabled = true;
+            this.IsBannerEditorEnabled = true;
+            this.IsFaceGenEnabled = true;
+            this.MapEventManager.OnAfterLoad();
+            this.KingdomManager.RegisterEvents();
+            this.KingdomManager.OnNewGameCreated();
+            this.CampaignInformationManager.RegisterEvents();
         }
 
         private void DailyTickSettlement(Settlement settlement)
@@ -444,7 +632,6 @@ namespace BOF.Campaign
             {
                 if (settlement.Town == null)
                     return;
-                
                 settlement.Town.DailyTick();
             }
         }
@@ -453,46 +640,39 @@ namespace BOF.Campaign
         {
             foreach (Settlement settlement in Settlement.All)
                 settlement.Party.UpdateVisibilityAndInspected();
-            
-            foreach (MobileParty mobileParty in MobileParties)
+            foreach (MobileParty mobileParty in this.MobileParties)
                 mobileParty.Party.UpdateVisibilityAndInspected();
         }
 
-        public void HourlyTick(MBCampaignEvent campaignEvent, object[] delegateParams)
+        internal void HourlyTick(MBCampaignEvent campaignEvent, object[] delegateParams)
         {
             CampaignEventDispatcher.Instance.HourlyTick();
-            
             if (!(Game.Current.GameStateManager.ActiveState is MapState activeState))
                 return;
-            
             activeState.OnHourlyTick();
         }
 
-        public void DailyTick(MBCampaignEvent campaignEvent, object[] delegateParams)
+        internal void DailyTick(MBCampaignEvent campaignEvent, object[] delegateParams)
         {
             CampaignEventDispatcher.Instance.DailyTick();
             CampaignEventDispatcher.Instance.AfterDailyTick();
-            
-            if ((int)CampaignStartTime.ElapsedDaysUntilNow % 7 != 0)
+            if ((int)this.CampaignStartTime.ElapsedDaysUntilNow % 7 != 0)
                 return;
-            
             CampaignEventDispatcher.Instance.WeeklyTick();
-            OnWeeklyTick();
+            this.OnWeeklyTick();
         }
 
         private void OnWeeklyTick()
         {
-            LogEntryHistory.DeleteOutdatedLogs();
-            
-            if (WeeklyTicked == null)
+            this.LogEntryHistory.DeleteOutdatedLogs();
+            if (this.WeeklyTicked == null)
                 return;
-            
-            WeeklyTicked();
+            this.WeeklyTicked();
         }
 
         public CampaignTimeControlMode GetSimplifiedTimeControlMode()
         {
-            switch (TimeControlMode)
+            switch (this.TimeControlMode)
             {
                 case CampaignTimeControlMode.Stop:
                     return CampaignTimeControlMode.Stop;
@@ -502,11 +682,11 @@ namespace BOF.Campaign
                 case CampaignTimeControlMode.UnstoppableFastForwardForPartyWaitTime:
                     return CampaignTimeControlMode.UnstoppableFastForward;
                 case CampaignTimeControlMode.StoppablePlay:
-                    return !IsMainPartyWaiting
+                    return !this.IsMainPartyWaiting
                         ? CampaignTimeControlMode.StoppablePlay
                         : CampaignTimeControlMode.Stop;
                 case CampaignTimeControlMode.StoppableFastForward:
-                    return !IsMainPartyWaiting
+                    return !this.IsMainPartyWaiting
                         ? CampaignTimeControlMode.StoppableFastForward
                         : CampaignTimeControlMode.Stop;
                 default:
@@ -519,16 +699,15 @@ namespace BOF.Campaign
         private void TickMapTime(float realDt)
         {
             float num1 = 0.0f;
-            float speedUpMultiplier = SpeedUpMultiplier;
+            float speedUpMultiplier = this.SpeedUpMultiplier;
             float num2 = 0.25f * realDt;
-            IsMainPartyWaiting = MobileParty.MainParty.ComputeIsWaiting();
-            
-            switch (TimeControlMode)
+            this.IsMainPartyWaiting = MobileParty.MainParty.ComputeIsWaiting();
+            switch (this.TimeControlMode)
             {
                 case CampaignTimeControlMode.Stop:
                 case CampaignTimeControlMode.FastForwardStop:
-                    _dt = num1;
-                    MapTimeTracker.Tick(4320f * num1);
+                    this._dt = num1;
+                    this.MapTimeTracker.Tick(4320f * num1);
                     break;
                 case CampaignTimeControlMode.UnstoppablePlay:
                     num1 = num2;
@@ -538,7 +717,7 @@ namespace BOF.Campaign
                     num1 = num2 * speedUpMultiplier;
                     goto case CampaignTimeControlMode.Stop;
                 case CampaignTimeControlMode.StoppablePlay:
-                    if (!IsMainPartyWaiting)
+                    if (!this.IsMainPartyWaiting)
                     {
                         num1 = num2;
                         goto case CampaignTimeControlMode.Stop;
@@ -546,7 +725,7 @@ namespace BOF.Campaign
                     else
                         goto case CampaignTimeControlMode.Stop;
                 case CampaignTimeControlMode.StoppableFastForward:
-                    if (!IsMainPartyWaiting)
+                    if (!this.IsMainPartyWaiting)
                     {
                         num1 = num2 * speedUpMultiplier;
                         goto case CampaignTimeControlMode.Stop;
@@ -562,90 +741,84 @@ namespace BOF.Campaign
         {
             if (!CampaignOptions.IsIronmanMode)
                 return;
-            
-            SaveHandler.QuickSaveCurrentGame();
+            this.SaveHandler.QuickSaveCurrentGame();
         }
 
         internal void RealTick(float realDt)
         {
-            CheckMainPartyNeedsUpdate();
-            TickMapTime(realDt);
-            
-            foreach (CampaignEntityComponent component in _campaignEntitySystem.GetComponents())
-                component.OnTick(realDt, _dt);
-            
-            if (!GameStarted)
+            this.CheckMainPartyNeedsUpdate();
+            this.TickMapTime(realDt);
+            foreach (CampaignEntityComponent component in this._campaignEntitySystem.GetComponents())
+                component.OnTick(realDt, this._dt);
+            if (!this.GameStarted)
             {
-                GameStarted = true;
+                this.GameStarted = true;
                 int num = 0;
-                
                 foreach (SkillObject skill in Skills.All)
                     num += Hero.MainHero.GetSkillValue(skill);
-                
-                InitialPlayerTotalSkills = num;
-                SiegeEventManager.Tick(_dt);
+                this.InitialPlayerTotalSkills = num;
+                this.SiegeEventManager.Tick(this._dt);
             }
 
-            _mobilePartyTickDataCache.ValidateMobilePartyTickDataCache(MobileParties.Count);
+            this._mobilePartyTickDataCache.ValidateMobilePartyTickDataCache(this.MobileParties.Count);
             int index1 = 0;
-            foreach (MobileParty mobileParty in MobileParties)
+            foreach (MobileParty mobileParty in this.MobileParties)
             {
-                _mobilePartyTickDataCache.CacheData[index1].mobileParty = mobileParty;
-                _mobilePartyTickDataCache.CacheData[index1].isInArmy = mobileParty.Army != null;
+                this._mobilePartyTickDataCache.CacheData[index1].mobileParty = mobileParty;
+                this._mobilePartyTickDataCache.CacheData[index1].isInArmy = mobileParty.Army != null;
                 ++index1;
             }
 
             for (int index2 = 0; index2 < index1; ++index2)
             {
-                MobileParty mobileParty = _mobilePartyTickDataCache.CacheData[index2].mobileParty;
-                mobileParty.TickForMobileParty(ref _mobilePartyTickDataCache.CacheData[index2].localVariables,_dt, realDt);
-                
-                if (_mobilePartyTickDataCache.CacheData[index2].isInArmy)
+                MobileParty mobileParty = this._mobilePartyTickDataCache.CacheData[index2].mobileParty;
+                mobileParty.TickForMobileParty(ref this._mobilePartyTickDataCache.CacheData[index2].localVariables,
+                    this._dt, realDt);
+                if (this._mobilePartyTickDataCache.CacheData[index2].isInArmy)
                 {
-                    _mobilePartyTickDataCache.CacheData[index2].localVariables.nextPathFaceRecord = Current.MapSceneWrapper.GetFaceIndex(_mobilePartyTickDataCache.CacheData[index2].localVariables.nextPosition);
-                    mobileParty.TickForMobileParty2(ref _mobilePartyTickDataCache.CacheData[index2].localVariables, realDt);
+                    this._mobilePartyTickDataCache.CacheData[index2].localVariables.nextPathFaceRecord =
+                        Current.MapSceneWrapper.GetFaceIndex(this._mobilePartyTickDataCache.CacheData[index2]
+                            .localVariables.nextPosition);
+                    mobileParty.TickForMobileParty2(ref this._mobilePartyTickDataCache.CacheData[index2].localVariables,
+                        realDt);
                 }
             }
 
             int movedPartyCount = 0;
             for (int index3 = 0; index3 < index1; ++index3)
             {
-                MobileParty.TickLocalVariables localVariables = _mobilePartyTickDataCache.CacheData[index3].localVariables;
-                MobileParty mobileParty = _mobilePartyTickDataCache.CacheData[index3].mobileParty;
-                
-                if (localVariables.nextMoveDistance > 0.0 && mobileParty.BesiegedSettlement == null &&
+                MobileParty.TickLocalVariables localVariables =
+                    this._mobilePartyTickDataCache.CacheData[index3].localVariables;
+                MobileParty mobileParty = this._mobilePartyTickDataCache.CacheData[index3].mobileParty;
+                if ((double)localVariables.nextMoveDistance > 0.0 && mobileParty.BesiegedSettlement == null &&
                     (!localVariables.hasMapEvent || localVariables.isArmyMember) && !localVariables.isArmyMember)
                 {
-                    _mobilePartyTickDataCache.PositionArray[movedPartyCount * 2] = localVariables.nextPosition.x;
-                    _mobilePartyTickDataCache.PositionArray[movedPartyCount * 2 + 1] = localVariables.nextPosition.y;
-                    _mobilePartyTickDataCache.MovedPartiesIndices[movedPartyCount] = index3;
-                    
+                    this._mobilePartyTickDataCache.PositionArray[movedPartyCount * 2] = localVariables.nextPosition.x;
+                    this._mobilePartyTickDataCache.PositionArray[movedPartyCount * 2 + 1] =
+                        localVariables.nextPosition.y;
+                    this._mobilePartyTickDataCache.MovedPartiesIndices[movedPartyCount] = index3;
                     ++movedPartyCount;
                 }
             }
 
-            Current.MapSceneWrapper.GetFaceIndexForMultiplePositions(movedPartyCount, _mobilePartyTickDataCache.PositionArray, _mobilePartyTickDataCache.ResultArray);
-            
+            Current.MapSceneWrapper.GetFaceIndexForMultiplePositions(movedPartyCount,
+                this._mobilePartyTickDataCache.PositionArray, this._mobilePartyTickDataCache.ResultArray);
             for (int index4 = 0; index4 < movedPartyCount; ++index4)
-                _mobilePartyTickDataCache.CacheData[_mobilePartyTickDataCache.MovedPartiesIndices[index4]].localVariables.nextPathFaceRecord = _mobilePartyTickDataCache.ResultArray[index4];
-            
+                this._mobilePartyTickDataCache.CacheData[this._mobilePartyTickDataCache.MovedPartiesIndices[index4]]
+                    .localVariables.nextPathFaceRecord = this._mobilePartyTickDataCache.ResultArray[index4];
             for (int index5 = 0; index5 < index1; ++index5)
             {
-                MobileParty mobileParty = _mobilePartyTickDataCache.CacheData[index5].mobileParty;
-                
-                if (!_mobilePartyTickDataCache.CacheData[index5].isInArmy)
-                {
-                    mobileParty.TickForMobileParty2(ref _mobilePartyTickDataCache.CacheData[index5].localVariables, realDt);
-                }
+                MobileParty mobileParty = this._mobilePartyTickDataCache.CacheData[index5].mobileParty;
+                if (!this._mobilePartyTickDataCache.CacheData[index5].isInArmy)
+                    mobileParty.TickForMobileParty2(ref this._mobilePartyTickDataCache.CacheData[index5].localVariables,
+                        realDt);
             }
 
             foreach (Settlement settlement in Settlement.All)
-                settlement.Party.Tick(realDt, _dt);
-            
-            foreach (MobileParty mobileParty in MobileParties)
-                mobileParty.Party.Tick(realDt, _dt);
-            
-            SiegeEventManager.Tick(_dt);
+                settlement.Party.Tick(realDt, this._dt);
+            foreach (MobileParty mobileParty in this.MobileParties)
+                mobileParty.Party.Tick(realDt, this._dt);
+            this.SiegeEventManager.Tick(this._dt);
         }
 
         public void SetTimeSpeed(int speed)
@@ -653,107 +826,113 @@ namespace BOF.Campaign
             switch (speed)
             {
                 case 0:
-                    if (TimeControlMode == CampaignTimeControlMode.UnstoppableFastForward || TimeControlMode == CampaignTimeControlMode.StoppableFastForward)
+                    if (this.TimeControlMode == CampaignTimeControlMode.UnstoppableFastForward ||
+                        this.TimeControlMode == CampaignTimeControlMode.StoppableFastForward)
                     {
-                        TimeControlMode = CampaignTimeControlMode.FastForwardStop;
+                        this.TimeControlMode = CampaignTimeControlMode.FastForwardStop;
                         break;
                     }
 
-                    if (TimeControlMode == CampaignTimeControlMode.FastForwardStop || TimeControlMode == CampaignTimeControlMode.Stop)
+                    if (this.TimeControlMode == CampaignTimeControlMode.FastForwardStop ||
+                        this.TimeControlMode == CampaignTimeControlMode.Stop)
                         break;
-                    
-                    TimeControlMode = CampaignTimeControlMode.Stop;
+                    this.TimeControlMode = CampaignTimeControlMode.Stop;
                     break;
                 case 1:
-                    if ((TimeControlMode == CampaignTimeControlMode.Stop || TimeControlMode == CampaignTimeControlMode.FastForwardStop) && MainParty.IsHolding ||
-                        IsMainPartyWaiting || MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty != MobileParty.MainParty)
+                    if ((this.TimeControlMode == CampaignTimeControlMode.Stop ||
+                         this.TimeControlMode == CampaignTimeControlMode.FastForwardStop) && this.MainParty.IsHolding ||
+                        this.IsMainPartyWaiting || MobileParty.MainParty.Army != null &&
+                        MobileParty.MainParty.Army.LeaderParty != MobileParty.MainParty)
                     {
-                        TimeControlMode = CampaignTimeControlMode.UnstoppablePlay;
+                        this.TimeControlMode = CampaignTimeControlMode.UnstoppablePlay;
                         break;
                     }
 
-                    TimeControlMode = CampaignTimeControlMode.StoppablePlay;
+                    this.TimeControlMode = CampaignTimeControlMode.StoppablePlay;
                     break;
                 case 2:
-                    if ((TimeControlMode == CampaignTimeControlMode.Stop || TimeControlMode == CampaignTimeControlMode.FastForwardStop) && MainParty.IsHolding ||
-                        IsMainPartyWaiting || MobileParty.MainParty.Army != null && MobileParty.MainParty.Army.LeaderParty != MobileParty.MainParty)
+                    if ((this.TimeControlMode == CampaignTimeControlMode.Stop ||
+                         this.TimeControlMode == CampaignTimeControlMode.FastForwardStop) && this.MainParty.IsHolding ||
+                        this.IsMainPartyWaiting || MobileParty.MainParty.Army != null &&
+                        MobileParty.MainParty.Army.LeaderParty != MobileParty.MainParty)
                     {
-                        TimeControlMode = CampaignTimeControlMode.UnstoppableFastForward;
+                        this.TimeControlMode = CampaignTimeControlMode.UnstoppableFastForward;
                         break;
                     }
 
-                    TimeControlMode = CampaignTimeControlMode.StoppableFastForward;
+                    this.TimeControlMode = CampaignTimeControlMode.StoppableFastForward;
                     break;
             }
         }
 
         internal void Tick()
         {
-            ++_curMapFrame;
-            ++_curSessionFrame;
-            
-            if (_dt > 0.0 || _curSessionFrame < 3)
+            ++this._curMapFrame;
+            ++this._curSessionFrame;
+            if ((double)this._dt > 0.0 || this._curSessionFrame < 3)
             {
-                CampaignEventDispatcher.Instance.Tick(_dt);
-                _campaignPeriodicEventManager.TickPartialHourlyAi();
-                _campaignPeriodicEventManager.OnTick(_dt);
-                PartiesThink(_dt);
-                MapEventManager.Tick();
-                _lastNonZeroDtFrame = _curMapFrame;
-                _campaignPeriodicEventManager.MobilePartyHourlyTick();
-                CampaignInformationManager.Tick();
+                CampaignEventDispatcher.Instance.Tick(this._dt);
+                this._campaignPeriodicEventManager.TickPartialHourlyAi();
+                this._campaignPeriodicEventManager.OnTick(this._dt);
+                this.PartiesThink(this._dt);
+                this.MapEventManager.Tick();
+                this._lastNonZeroDtFrame = this._curMapFrame;
+                this._campaignPeriodicEventManager.MobilePartyHourlyTick();
+                this.CampaignInformationManager.Tick();
             }
 
-            if (_dt > 0.0)
-                _campaignPeriodicEventManager.TickPeriodicEvents();
-            
-            Current.PlayerCaptivity.Update(_dt);
-            
-            if (_dt > 0.0 || MobileParty.MainParty.MapEvent == null &&
-                _curMapFrame == _lastNonZeroDtFrame + 1)
-                EncounterManager.Tick(_dt);
-            
+            if ((double)this._dt > 0.0)
+                this._campaignPeriodicEventManager.TickPeriodicEvents();
+            Current.PlayerCaptivity.Update(this._dt);
+            if ((double)this._dt > 0.0 || MobileParty.MainParty.MapEvent == null &&
+                this._curMapFrame == this._lastNonZeroDtFrame + 1)
+                EncounterManager.Tick(this._dt);
             if (!(Game.Current.GameStateManager.ActiveState is MapState activeState) || activeState.AtMenu)
                 return;
-            
-            string genericStateMenu = Models.EncounterGameMenuModel.GetGenericStateMenu();
+            string genericStateMenu = this.Models.EncounterGameMenuModel.GetGenericStateMenu();
             if (string.IsNullOrEmpty(genericStateMenu))
                 return;
-            
             GameMenu.ActivateGameMenu(genericStateMenu);
         }
 
         private void CreateCampaignEvents()
         {
-            long numTicks = (TaleWorlds.CampaignSystem.CampaignTime.Now - TaleWorlds.CampaignSystem.CampaignData.CampaignStartTime).NumTicks;
-            TaleWorlds.CampaignSystem.CampaignTime initialWait1 = TaleWorlds.CampaignSystem.CampaignTime.Days(1f);
-           
+            long numTicks = (CampaignTime.Now - CampaignData.CampaignStartTime).NumTicks;
+            CampaignTime initialWait1 = CampaignTime.Days(1f);
             if (numTicks % 864000000L != 0L)
-                initialWait1 = TaleWorlds.CampaignSystem.CampaignTime.Days(numTicks % 864000000L / 8.64E+08f);
-            _dailyTickEvent = CampaignPeriodicEventManager.CreatePeriodicEvent(TaleWorlds.CampaignSystem.CampaignTime.Days(1f), initialWait1);
-            _dailyTickEvent.AddHandler(DailyTick);
-            TaleWorlds.CampaignSystem.CampaignTime initialWait2 = TaleWorlds.CampaignSystem.CampaignTime.Hours(0.5f);
-            
+                initialWait1 = CampaignTime.Days((float)(numTicks % 864000000L) / 8.64E+08f);
+            this._dailyTickEvent =
+                CampaignPeriodicEventManager.CreatePeriodicEvent(CampaignTime.Days(1f), initialWait1);
+            this._dailyTickEvent.AddHandler(new MBCampaignEvent.CampaignEventDelegate(this.DailyTick));
+            CampaignTime initialWait2 = CampaignTime.Hours(0.5f);
             if (numTicks % 36000000L != 0L)
-                initialWait2 = TaleWorlds.CampaignSystem.CampaignTime.Hours(numTicks % 36000000L / 3.6E+07f);
-           
-            _hourlyTickEvent = CampaignPeriodicEventManager.CreatePeriodicEvent(TaleWorlds.CampaignSystem.CampaignTime.Hours(1f), initialWait2);
-            _hourlyTickEvent.AddHandler(HourlyTick);
+                initialWait2 = CampaignTime.Hours((float)(numTicks % 36000000L) / 3.6E+07f);
+            this._hourlyTickEvent =
+                CampaignPeriodicEventManager.CreatePeriodicEvent(CampaignTime.Hours(1f), initialWait2);
+            this._hourlyTickEvent.AddHandler(new MBCampaignEvent.CampaignEventDelegate(this.HourlyTick));
         }
 
         private void PartiesThink(float dt)
         {
-            foreach (MobileParty mobileParty in MobileParties)
+            foreach (MobileParty mobileParty in this.MobileParties)
                 mobileParty.TickAi(dt);
         }
 
-        public TComponent GetEntityComponent<TComponent>() where TComponent : CampaignEntityComponent => _campaignEntitySystem.GetComponent<TComponent>();
-        public TComponent AddEntityComponent<TComponent>() where TComponent : CampaignEntityComponent, new() => _campaignEntitySystem.AddComponent<TComponent>();
+        public TComponent GetEntityComponent<TComponent>() where TComponent : CampaignEntityComponent =>
+            this._campaignEntitySystem.GetComponent<TComponent>();
 
-        public T GetCampaignBehavior<T>() => _campaignBehaviorManager.GetBehavior<T>();
-        public IEnumerable<T> GetCampaignBehaviors<T>() => _campaignBehaviorManager.GetBehaviors<T>();
-        public void AddCampaignBehaviorManager(ICampaignBehaviorManager manager) =>  _campaignBehaviorManager = manager;
-        public void RemoveTracks(Predicate<Track> predicate) => _mapTracksCampaignBehavior?.RemoveTracks(predicate);
+        public TComponent AddEntityComponent<TComponent>() where TComponent : CampaignEntityComponent, new() =>
+            this._campaignEntitySystem.AddComponent<TComponent>();
+
+        public T GetCampaignBehavior<T>() => this._campaignBehaviorManager.GetBehavior<T>();
+
+        public IEnumerable<T> GetCampaignBehaviors<T>() => this._campaignBehaviorManager.GetBehaviors<T>();
+
+        public void AddCampaignBehaviorManager(ICampaignBehaviorManager manager) =>
+            this._campaignBehaviorManager = manager;
+
+        public void RemoveTracks(Predicate<Track> predicate) =>
+            this._mapTracksCampaignBehavior?.RemoveTracks(predicate);
 
         public void AddMapArrow(
             TextObject pointerName,
@@ -762,28 +941,28 @@ namespace BOF.Campaign
             float life,
             int numberOfMembers)
         {
-            _mapTracksCampaignBehavior?.AddMapArrow(pointerName, trackPosition, trackDirection, life, numberOfMembers);
+            this._mapTracksCampaignBehavior?.AddMapArrow(pointerName, trackPosition, trackDirection, life,
+                numberOfMembers);
         }
 
-        public int GeneratePartyId(PartyBase party)
+        internal int GeneratePartyId(PartyBase party)
         {
-            int lastPartyIndex = _lastPartyIndex;
-            ++_lastPartyIndex;
+            int lastPartyIndex = this._lastPartyIndex;
+            ++this._lastPartyIndex;
             return lastPartyIndex;
         }
 
-        public void AddTrack(MobileParty target, Vec2 trackPosition, Vec2 trackDirection)
+        internal void AddTrack(MobileParty target, Vec2 trackPosition, Vec2 trackDirection)
         {
-            if (_mapTracksCampaignBehavior.IsTrackDropped(target))
+            if (this._mapTracksCampaignBehavior.IsTrackDropped(target))
                 return;
-            
-            _mapTracksCampaignBehavior.AddTrack(target, trackPosition, trackDirection);
+            this._mapTracksCampaignBehavior.AddTrack(target, trackPosition, trackDirection);
         }
 
         private void LoadMapScene()
         {
-            _mapSceneWrapper = MapSceneCreator.CreateMapScene();
-            _mapSceneWrapper.SetSceneLevels(new List<string>
+            this._mapSceneWrapper = this.MapSceneCreator.CreateMapScene();
+            this._mapSceneWrapper.SetSceneLevels(new List<string>()
             {
                 "level_1",
                 "level_2",
@@ -792,35 +971,32 @@ namespace BOF.Campaign
                 "raid",
                 "burned"
             });
-            _mapSceneWrapper.Load();
+            this._mapSceneWrapper.Load();
             Vec2 minimumPosition;
             Vec2 maximumPosition;
             float maximumHeight;
-            _mapSceneWrapper.GetMapBorders(out minimumPosition, out maximumPosition, out maximumHeight);
+            this._mapSceneWrapper.GetMapBorders(out minimumPosition, out maximumPosition, out maximumHeight);
             MapMinimumPosition = minimumPosition;
             MapMaximumPosition = maximumPosition;
             MapMaximumHeight = maximumHeight;
-            MapDiagonal = MapMinimumPosition.Distance(MapMaximumPosition);
+            MapDiagonal = Campaign.MapMinimumPosition.Distance(Campaign.MapMaximumPosition);
         }
 
         private void InitializeCachedLists()
         {
             MBObjectManager objectManager = Game.Current.ObjectManager;
-            _characters = objectManager.GetObjectTypeList<CharacterObject>();
-            _workshops = objectManager.GetObjectTypeList<WorkshopType>();
-            _itemModifiers = objectManager.GetObjectTypeList<ItemModifier>();
-            _itemModifierGroups = objectManager.GetObjectTypeList<ItemModifierGroup>();
-            _concepts = objectManager.GetObjectTypeList<Concept>();
-            
-            TemplateCharacters = _characters
-                .Where(x => x.IsTemplate && !x.IsObsolete)
-                .ToList().GetReadOnlyList();
-            
-            ChildTemplateCharacters = _characters
-                .Where(x => x.IsChildTemplate && !x.IsObsolete)
-                .ToList().GetReadOnlyList();
-            
-            _mapTracksCampaignBehavior = GetCampaignBehavior<IMapTracksCampaignBehavior>();
+            this._characters = objectManager.GetObjectTypeList<CharacterObject>();
+            this._workshops = objectManager.GetObjectTypeList<WorkshopType>();
+            this._itemModifiers = objectManager.GetObjectTypeList<ItemModifier>();
+            this._itemModifierGroups = objectManager.GetObjectTypeList<ItemModifierGroup>();
+            this._concepts = objectManager.GetObjectTypeList<Concept>();
+            this.TemplateCharacters = this._characters
+                .Where<CharacterObject>((Func<CharacterObject, bool>)(x => x.IsTemplate && !x.IsObsolete))
+                .ToList<CharacterObject>().GetReadOnlyList<CharacterObject>();
+            this.ChildTemplateCharacters = this._characters
+                .Where<CharacterObject>((Func<CharacterObject, bool>)(x => x.IsChildTemplate && !x.IsObsolete))
+                .ToList<CharacterObject>().GetReadOnlyList<CharacterObject>();
+            this._mapTracksCampaignBehavior = this.GetCampaignBehavior<IMapTracksCampaignBehavior>();
         }
 
         public IEnumerable<MobileParty> GetNearbyMobileParties(
@@ -828,15 +1004,15 @@ namespace BOF.Campaign
             float radius,
             Func<MobileParty, bool> condition)
         {
-            return MobilePartyLocator.FindPartiesAroundPosition(position, radius, condition);
+            return this.MobilePartyLocator.FindPartiesAroundPosition(position, radius, condition);
         }
 
         public override void OnDestroy()
         {
             GameTexts.ClearInstance();
-            _mapSceneWrapper?.Destroy();
+            this._mapSceneWrapper?.Destroy();
             ConversationManager.Clear();
-            TaleWorlds.CampaignSystem.CampaignData.OnGameEnd();
+            CampaignData.OnGameEnd();
             MBTextManager.ClearAll();
             CampaignSiegeTestStatic.Destruct();
             MBSaveLoad.OnGameDestroy();
@@ -845,191 +1021,183 @@ namespace BOF.Campaign
 
         public void InitializeSinglePlayerReferences()
         {
-            IsInitializedSinglePlayerReferences = true;
-            InitializeGamePlayReferences();
+            this.IsInitializedSinglePlayerReferences = true;
+            this.InitializeGamePlayReferences();
         }
 
         private void CreateLists()
         {
-            AllPerks = MBObjectManager.Instance.GetObjectTypeList<PerkObject>();
-            AllTraits = MBObjectManager.Instance.GetObjectTypeList<TraitObject>();
-            AllPolicies = MBObjectManager.Instance.GetObjectTypeList<PolicyObject>();
-            AllBuildingTypes = MBObjectManager.Instance.GetObjectTypeList<BuildingType>();
-            AllIssueEffects = MBObjectManager.Instance.GetObjectTypeList<IssueEffect>();
-            AllSiegeStrategies = MBObjectManager.Instance.GetObjectTypeList<SiegeStrategy>();
-            AllVillageTypes = MBObjectManager.Instance.GetObjectTypeList<VillageType>();
-            AllSkillEffects = MBObjectManager.Instance.GetObjectTypeList<SkillEffect>();
-            AllFeats = MBObjectManager.Instance.GetObjectTypeList<FeatObject>();
-            AllSkills = MBObjectManager.Instance.GetObjectTypeList<SkillObject>();
-            AllSiegeEngineTypes = MBObjectManager.Instance.GetObjectTypeList<SiegeEngineType>();
-            AllItemCategories = MBObjectManager.Instance.GetObjectTypeList<ItemCategory>();
-            AllCharacterAttributes = MBObjectManager.Instance.GetObjectTypeList<CharacterAttribute>();
-            AllItems = MBObjectManager.Instance.GetObjectTypeList<ItemObject>();
+            this.AllPerks = MBObjectManager.Instance.GetObjectTypeList<PerkObject>();
+            this.AllTraits = MBObjectManager.Instance.GetObjectTypeList<TraitObject>();
+            this.AllPolicies = MBObjectManager.Instance.GetObjectTypeList<PolicyObject>();
+            this.AllBuildingTypes = MBObjectManager.Instance.GetObjectTypeList<BuildingType>();
+            this.AllIssueEffects = MBObjectManager.Instance.GetObjectTypeList<IssueEffect>();
+            this.AllSiegeStrategies = MBObjectManager.Instance.GetObjectTypeList<SiegeStrategy>();
+            this.AllVillageTypes = MBObjectManager.Instance.GetObjectTypeList<VillageType>();
+            this.AllSkillEffects = MBObjectManager.Instance.GetObjectTypeList<SkillEffect>();
+            this.AllFeats = MBObjectManager.Instance.GetObjectTypeList<FeatObject>();
+            this.AllSkills = MBObjectManager.Instance.GetObjectTypeList<SkillObject>();
+            this.AllSiegeEngineTypes = MBObjectManager.Instance.GetObjectTypeList<SiegeEngineType>();
+            this.AllItemCategories = MBObjectManager.Instance.GetObjectTypeList<ItemCategory>();
+            this.AllCharacterAttributes = MBObjectManager.Instance.GetObjectTypeList<CharacterAttribute>();
+            this.AllItems = MBObjectManager.Instance.GetObjectTypeList<ItemObject>();
         }
 
         private void CalculateAverageDistanceBetweenTowns()
         {
-            if (GameMode == CampaignGameMode.Tutorial)
+            if (this.GameMode == CampaignGameMode.Tutorial)
                 return;
-            
-            float sum = 0.0f;
-            int townCount = 0;
-            
-            foreach (Town allTown1 in AllTowns)
+            float num1 = 0.0f;
+            int num2 = 0;
+            foreach (Town allTown1 in (IEnumerable<Town>)this.AllTowns)
             {
                 float num3 = 2.5E+07f;
-                foreach (Town allTown2 in AllTowns)
+                foreach (Town allTown2 in (IEnumerable<Town>)this.AllTowns)
                 {
                     if (allTown1 != allTown2)
                     {
                         float num4 = allTown1.Settlement.Position2D.DistanceSquared(allTown2.Settlement.Position2D);
-                        if (num4 < (double)num3)
+                        if ((double)num4 < (double)num3)
                             num3 = num4;
                     }
                 }
 
-                sum += (float)Math.Sqrt(num3);
-                ++townCount;
+                num1 += (float)Math.Sqrt((double)num3);
+                ++num2;
             }
 
-            AverageDistanceBetweenTwoTowns = sum / townCount;
+            AverageDistanceBetweenTwoTowns = num1 / (float)num2;
         }
 
         public void InitializeGamePlayReferences()
         {
-            CurrentGame.PlayerTroop =
-                (BasicCharacterObject)CurrentGame.ObjectManager.GetObject<CharacterObject>("main_hero");
+            this.CurrentGame.PlayerTroop =
+                (BasicCharacterObject)this.CurrentGame.ObjectManager.GetObject<CharacterObject>("main_hero");
             if (Hero.MainHero.Mother != null)
                 Hero.MainHero.Mother.HasMet = true;
             if (Hero.MainHero.Father != null)
                 Hero.MainHero.Father.HasMet = true;
-            PlayerDefaultFaction = CampaignObjectManager.Find<Clan>("player_faction");
+            this.PlayerDefaultFaction = this.CampaignObjectManager.Find<Clan>("player_faction");
             Hero.MainHero.Detected = true;
-            GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, 1000, true);
+            GiveGoldAction.ApplyBetweenCharacters((Hero)null, Hero.MainHero, 1000, true);
         }
 
         private void InitializeScenes()
         {
-            // TODO: Point these to correct module paths
-            // GameSceneDataManager.Instance.LoadSPBattleScenes(ModuleHelper.GetModuleFullPath("Sandbox") + "ModuleData/sp_battle_scenes.xml");
-            // GameSceneDataManager.Instance.LoadConversationScenes(ModuleHelper.GetModuleFullPath("Sandbox") + "ModuleData/conversation_scenes.xml");
-            // GameSceneDataManager.Instance.LoadMeetingScenes(ModuleHelper.GetModuleFullPath("Sandbox") + "ModuleData/meeting_scenes.xml");
+            GameSceneDataManager.Instance.LoadSPBattleScenes(ModuleHelper.GetModuleFullPath("Sandbox") +
+                                                             "ModuleData/sp_battle_scenes.xml");
+            GameSceneDataManager.Instance.LoadConversationScenes(ModuleHelper.GetModuleFullPath("Sandbox") +
+                                                                 "ModuleData/conversation_scenes.xml");
+            GameSceneDataManager.Instance.LoadMeetingScenes(ModuleHelper.GetModuleFullPath("Sandbox") +
+                                                            "ModuleData/meeting_scenes.xml");
         }
 
         public void SetLoadingParameters(GameLoadingType gameLoadingType, int randomSeed)
         {
             Current = this;
-            _gameLoadingType = gameLoadingType;
+            this._gameLoadingType = gameLoadingType;
             if (gameLoadingType == GameLoadingType.SavedCampaign)
                 return;
-            CurrentGame.SetRandomSeed(randomSeed);
+            this.CurrentGame.SetRandomSeed(randomSeed);
         }
 
         public void SetLoadingParameters(GameLoadingType gameLoadingType)
         {
-            int randomSeed = (int)DateTime.Now.Ticks & ushort.MaxValue;
-            SetLoadingParameters(gameLoadingType, randomSeed);
+            int randomSeed = (int)DateTime.Now.Ticks & (int)ushort.MaxValue;
+            this.SetLoadingParameters(gameLoadingType, randomSeed);
         }
 
-        public void AddCampaignEventReceiver(CampaignEventReceiver receiver) => CampaignEventDispatcher.AddCampaignEventReceiver(receiver);
+        public void AddCampaignEventReceiver(CampaignEventReceiver receiver) =>
+            this.CampaignEventDispatcher.AddCampaignEventReceiver(receiver);
 
         protected override void OnInitialize()
         {
-            CampaignEvents = new CampaignEvents();
-            PeriodicCampaignEvents = new List<MBCampaignEvent>();
-            CampaignEventDispatcher = new CampaignEventDispatcher(
+            this.CampaignEvents = new CampaignEvents();
+            this.PeriodicCampaignEvents = new List<MBCampaignEvent>();
+            this.CampaignEventDispatcher = new CampaignEventDispatcher(
                 (IEnumerable<CampaignEventReceiver>)new CampaignEventReceiver[3]
                 {
-                    CampaignEvents,
-                    IssueManager,
-                    QuestManager
+                    (CampaignEventReceiver)this.CampaignEvents,
+                    (CampaignEventReceiver)this.IssueManager,
+                    (CampaignEventReceiver)this.QuestManager
                 });
-            SandBoxManager = Game.Current.AddGameHandler<SandBoxManager>();
-            SaveHandler = new SaveHandler();
-            VisualCreator = new VisualCreator();
-            GameMenuManager = new GameMenuManager();
-            
-            if (_gameLoadingType != GameLoadingType.Editor)
-                CreateManagers();
-            
-            CampaignGameStarter campaignGameStarter = new CampaignGameStarter(GameMenuManager, ConversationManager, CurrentGame.GameTextManager);
-            SandBoxManager.Initialize(campaignGameStarter);
-            GameManager.InitializeGameStarter(CurrentGame, campaignGameStarter);
-            CurrentGame.SetRandomGenerators();
-            
-            if (_gameLoadingType == GameLoadingType.NewCampaign || _gameLoadingType == GameLoadingType.SavedCampaign)
-                InitializeScenes();
-            
-            GameManager.OnGameStart(CurrentGame, campaignGameStarter);
-            CurrentGame.SetBasicModels(campaignGameStarter.Models);
-            _gameModels = CurrentGame.AddGameModelsManager<GameModels>(campaignGameStarter.Models);
-            CurrentGame.CreateGameManager();
-            
-            if (_gameLoadingType == GameLoadingType.SavedCampaign)
+            this.SandBoxManager = Game.Current.AddGameHandler<SandBoxManager>();
+            this.SaveHandler = new SaveHandler();
+            this.VisualCreator = new VisualCreator();
+            this.GameMenuManager = new GameMenuManager();
+            if (this._gameLoadingType != GameLoadingType.Editor)
+                this.CreateManagers();
+            CampaignGameStarter campaignGameStarter = new CampaignGameStarter(this.GameMenuManager,
+                this.ConversationManager, this.CurrentGame.GameTextManager);
+            this.SandBoxManager.Initialize(campaignGameStarter);
+            this.GameManager.InitializeGameStarter(this.CurrentGame, (IGameStarter)campaignGameStarter);
+            this.CurrentGame.SetRandomGenerators();
+            if (this._gameLoadingType == GameLoadingType.NewCampaign ||
+                this._gameLoadingType == GameLoadingType.SavedCampaign)
+                this.InitializeScenes();
+            this.GameManager.OnGameStart(this.CurrentGame, (IGameStarter)campaignGameStarter);
+            this.CurrentGame.SetBasicModels(campaignGameStarter.Models);
+            this._gameModels = this.CurrentGame.AddGameModelsManager<GameModels>(campaignGameStarter.Models);
+            this.CurrentGame.CreateGameManager();
+            if (this._gameLoadingType == GameLoadingType.SavedCampaign)
             {
-                CurrentGame.InitializeOnCampaignStart();
-                InitializeDefaultCampaignObjects();
+                this.CurrentGame.InitializeOnCampaignStart();
+                this.InitializeDefaultCampaignObjects();
             }
 
-            GameManager.BeginGameStart(CurrentGame);
-            
-            if (_gameLoadingType != GameLoadingType.SavedCampaign)
-                OnNewCampaignStart();
-            
-            CreateLists();
-            InitializeBasicObjectXmls();
-            
-            if (_gameLoadingType != GameLoadingType.SavedCampaign)
-                GameManager.OnNewCampaignStart(CurrentGame, campaignGameStarter);
-            
-            if (_gameLoadingType == GameLoadingType.SavedCampaign)
-                CampaignObjectManager.InitializeForOldSaves();
-            
-            SandBoxManager.OnCampaignStart(campaignGameStarter, GameManager, _gameLoadingType == GameLoadingType.SavedCampaign);
-           
-            if (_gameLoadingType != GameLoadingType.SavedCampaign)
+            this.GameManager.BeginGameStart(this.CurrentGame);
+            if (this._gameLoadingType != GameLoadingType.SavedCampaign)
+                this.OnNewCampaignStart();
+            this.CreateLists();
+            this.InitializeBasicObjectXmls();
+            if (this._gameLoadingType != GameLoadingType.SavedCampaign)
+                this.GameManager.OnNewCampaignStart(this.CurrentGame, (object)campaignGameStarter);
+            if (this._gameLoadingType == GameLoadingType.SavedCampaign)
+                this.CampaignObjectManager.InitializeForOldSaves();
+            this.SandBoxManager.OnCampaignStart(campaignGameStarter, this.GameManager,
+                this._gameLoadingType == GameLoadingType.SavedCampaign);
+            if (this._gameLoadingType != GameLoadingType.SavedCampaign)
             {
-                AddCampaignBehaviorManager(new CampaignBehaviorManager(campaignGameStarter.CampaignBehaviors));
-                GameManager.OnAfterCampaignStart(CurrentGame);
+                this.AddCampaignBehaviorManager(
+                    (ICampaignBehaviorManager)
+                    new TaleWorlds.CampaignSystem.SandBox.CampaignBehaviors.CampaignBehaviorManager(
+                        (IEnumerable<CampaignBehaviorBase>)campaignGameStarter.CampaignBehaviors));
+                this.GameManager.OnAfterCampaignStart(this.CurrentGame);
             }
             else
             {
-                SandBoxManager.OnGameLoaded(campaignGameStarter);
-                GameManager.OnGameLoaded(CurrentGame, campaignGameStarter);
-                _campaignBehaviorManager.InitializeCampaignBehaviors(campaignGameStarter.CampaignBehaviors);
-                _campaignBehaviorManager.RegisterEvents();
-                _campaignBehaviorManager.OnGameLoaded();
+                this.SandBoxManager.OnGameLoaded((object)campaignGameStarter);
+                this.GameManager.OnGameLoaded(this.CurrentGame, (object)campaignGameStarter);
+                this._campaignBehaviorManager.InitializeCampaignBehaviors(
+                    (IEnumerable<CampaignBehaviorBase>)campaignGameStarter.CampaignBehaviors);
+                this._campaignBehaviorManager.RegisterEvents();
+                this._campaignBehaviorManager.OnGameLoaded();
             }
 
             Current.GetCampaignBehavior<ICraftingCampaignBehavior>()?.InitializeCraftingElements();
             campaignGameStarter.UnregisterNonReadyObjects();
-
-            if (_gameLoadingType == GameLoadingType.SavedCampaign)
-            {
-                InitializeCampaignObjectsOnAfterLoad();
-            }
-            else if (_gameLoadingType == GameLoadingType.NewCampaign || _gameLoadingType == GameLoadingType.Tutorial)
-            {
-                CampaignObjectManager.InitializeOnNewGame();
-            }
-            
-            InitializeCachedLists();
-            NameGenerator.Initialize();
-            CurrentGame.OnGameStart();
-            GameManager.OnGameInitializationFinished(CurrentGame);
+            if (this._gameLoadingType == GameLoadingType.SavedCampaign)
+                this.InitializeCampaignObjectsOnAfterLoad();
+            else if (this._gameLoadingType == GameLoadingType.NewCampaign ||
+                     this._gameLoadingType == GameLoadingType.Tutorial)
+            this.CampaignObjectManager.InitializeOnNewGame();
+            this.InitializeCachedLists();
+            this.NameGenerator.Initialize();
+            this.CurrentGame.OnGameStart();
+            this.GameManager.OnGameInitializationFinished(this.CurrentGame);
         }
 
         private void CalculateCachedStatsOnLoad() => ItemRoster.CalculateCachedStatsOnLoad();
 
         private void InitializeBasicObjectXmls()
         {
-            ObjectManager.LoadXML("SPCultures");
-            ObjectManager.LoadXML("Concepts");
+            this.ObjectManager.LoadXML("SPCultures");
+            this.ObjectManager.LoadXML("Concepts");
         }
 
         private void InitializeDefaultCampaignObjects()
         {
-            var campaign = this;
+            BOFCampaign campaign = this;
             campaign.DefaultIssueEffects = new DefaultIssueEffects();
             campaign.DefaultTraits = new DefaultTraits();
             campaign.DefaultPolicies = new DefaultPolicies();
@@ -1044,50 +1212,48 @@ namespace BOF.Campaign
 
         private void InitializeManagers()
         {
-            var campaign = this;
+            Campaign campaign = this;
             campaign.KingdomManager = new KingdomManager();
             campaign.CampaignInformationManager = new CampaignInformationManager();
             campaign.VisualTrackerManager = new VisualTrackerManager();
-            campaign.TournamentManager = new TournamentManager();
+            campaign.TournamentManager =
+                (ITournamentManager)new TaleWorlds.CampaignSystem.SandBox.Source.TournamentGames.TournamentManager();
         }
 
         private void InitializeCampaignObjectsOnAfterLoad()
         {
-            CampaignObjectManager.InitializeOnLoad();
-            FactionManager.AfterLoad();
-            AllPerks = new MBReadOnlyList<PerkObject>(AllPerks.Where(x => !x.IsTrash).ToList());
-            LogEntryHistory.OnAfterLoad();
-            
-            foreach (Kingdom kingdom in Kingdoms)
+            this.CampaignObjectManager.InitializeOnLoad();
+            this.FactionManager.AfterLoad();
+            this.AllPerks = new MBReadOnlyList<PerkObject>(this.AllPerks
+                .Where<PerkObject>((Func<PerkObject, bool>)(x => !x.IsTrash)).ToList<PerkObject>());
+            this.LogEntryHistory.OnAfterLoad();
+            foreach (Kingdom kingdom in this.Kingdoms)
             {
                 foreach (Army army in kingdom.Armies)
-                {
                     army.OnAfterLoad();
-                }
             }
         }
 
         private void OnNewCampaignStart()
         {
-            Game.Current.PlayerTroop = null;
-            MapStateData = new MapStateData();
-            CurrentGame.InitializeOnCampaignStart();
-            InitializeDefaultCampaignObjects();
-            MainParty = MBObjectManager.Instance.CreateObject<MobileParty>("player_party");
-            MainParty.SetAsMainParty();
-            InitializeManagers();
+            Game.Current.PlayerTroop = (BasicCharacterObject)null;
+            this.MapStateData = new MapStateData();
+            this.CurrentGame.InitializeOnCampaignStart();
+            this.InitializeDefaultCampaignObjects();
+            this.MainParty = MBObjectManager.Instance.CreateObject<MobileParty>("player_party");
+            this.MainParty.SetAsMainParty();
+            this.InitializeManagers();
         }
 
-        protected override void BeforeRegisterTypes(MBObjectManager objectManager) => objectManager.RegisterNonSerializedType<FeatObject>("Feat", "Feats", 0U);
+        protected override void BeforeRegisterTypes(MBObjectManager objectManager) =>
+            objectManager.RegisterNonSerializedType<FeatObject>("Feat", "Feats", 0U);
 
         protected override void OnRegisterTypes(MBObjectManager objectManager)
         {
             objectManager.RegisterType<MobileParty>("MobileParty", "MobileParties", 14U, isTemporary: true);
             objectManager.RegisterType<CharacterObject>("NPCCharacter", "NPCCharacters", 16U);
-            
-            if (GameMode == CampaignGameMode.Tutorial)
+            if (this.GameMode == CampaignGameMode.Tutorial)
                 objectManager.RegisterType<BasicCharacterObject>("NPCCharacter", "MPCharacters", 43U);
-            
             objectManager.RegisterType<CultureObject>("Culture", "SPCultures", 17U);
             objectManager.RegisterType<Clan>("Faction", "Factions", 18U, isTemporary: true);
             objectManager.RegisterType<PerkObject>("Perk", "Perks", 19U);
@@ -1108,67 +1274,67 @@ namespace BOF.Campaign
             objectManager.RegisterType<IssueEffect>("IssueEffect", "IssueEffects", 39U);
             objectManager.RegisterType<SiegeStrategy>("SiegeStrategy", "SiegeStrategies", 40U);
             objectManager.RegisterNonSerializedType<SkillEffect>("SkillEffect", "SkillEffects", 53U);
-            objectManager.RegisterNonSerializedType<LocationComplexTemplate>("LocationComplexTemplate","LocationComplexTemplates", 42U);
+            objectManager.RegisterNonSerializedType<LocationComplexTemplate>("LocationComplexTemplate",
+                "LocationComplexTemplates", 42U);
         }
 
         private void CreateManagers()
         {
-            _encyclopediaManager = new EncyclopediaManager();
-            _inventoryManager = new InventoryManager();
-            _partyScreenManager = new PartyScreenManager();
-            _conversationManager = new ConversationManager();
-            NameGenerator = new NameGenerator();
+            this._encyclopediaManager = new EncyclopediaManager();
+            this._inventoryManager = new InventoryManager();
+            this._partyScreenManager = new PartyScreenManager();
+            this._conversationManager = new ConversationManager();
+            this.NameGenerator = new NameGenerator();
         }
 
         private void OnNewGameCreated(CampaignGameStarter gameStarter)
         {
-            OnNewGameCreatedInternal();
-            SandBoxManager.OnNewGameCreated(gameStarter);
-            GameManager?.OnNewGameCreated(CurrentGame, gameStarter);
+            this.OnNewGameCreatedInternal();
+            this.SandBoxManager.OnNewGameCreated((object)gameStarter);
+            this.GameManager?.OnNewGameCreated(this.CurrentGame, (object)gameStarter);
             CampaignEventDispatcher.Instance.OnNewGameCreated(gameStarter);
-            OnAfterNewGameCreatedInternal();
+            this.OnAfterNewGameCreatedInternal();
         }
 
         private void OnNewGameCreatedInternal()
         {
-            CheatFindItemRangeBegin = 0;
-            UniqueGameId = MiscHelper.GenerateCampaignId(12);
-            PlayerTraitDeveloper = new HeroTraitDeveloper(Hero.MainHero);
-            TimeControlMode = CampaignTimeControlMode.Stop;
-            _campaignEntitySystem = new EntitySystem<CampaignEntityComponent>();
-            SiegeEventManager = new SiegeEventManager();
-            MapEventManager = new MapEventManager(CurrentGame);
-            autoEnterTown = null;
-            MinSettlementX = 1000f;
-            MinSettlementY = 1000f;
-            
+            this.CheatFindItemRangeBegin = 0;
+            this.UniqueGameId = MiscHelper.GenerateCampaignId(12);
+            this.PlayerTraitDeveloper = new HeroTraitDeveloper(Hero.MainHero);
+            this.TimeControlMode = CampaignTimeControlMode.Stop;
+            this._campaignEntitySystem = new EntitySystem<CampaignEntityComponent>();
+            this.SiegeEventManager = new SiegeEventManager();
+            this.MapEventManager = new MapEventManager(this.CurrentGame);
+            this.autoEnterTown = (PartyBase)null;
+            this.MinSettlementX = 1000f;
+            this.MinSettlementY = 1000f;
             foreach (Settlement settlement in Settlement.All)
             {
-                if (settlement.Position2D.x < (double)MinSettlementX)
-                    MinSettlementX = settlement.Position2D.x;
-                if (settlement.Position2D.y < (double)MinSettlementY)
-                    MinSettlementY = settlement.Position2D.y;
-                if (settlement.Position2D.x > (double)MaxSettlementX)
-                    MaxSettlementX = settlement.Position2D.x;
-                if (settlement.Position2D.y > (double)MaxSettlementY)
-                    MaxSettlementY = settlement.Position2D.y;
+                if ((double)settlement.Position2D.x < (double)this.MinSettlementX)
+                    this.MinSettlementX = settlement.Position2D.x;
+                if ((double)settlement.Position2D.y < (double)this.MinSettlementY)
+                    this.MinSettlementY = settlement.Position2D.y;
+                if ((double)settlement.Position2D.x > (double)this.MaxSettlementX)
+                    this.MaxSettlementX = settlement.Position2D.x;
+                if ((double)settlement.Position2D.y > (double)this.MaxSettlementY)
+                    this.MaxSettlementY = settlement.Position2D.y;
             }
 
-            CampaignBehaviorManager.RegisterEvents();
-            CameraFollowParty = MainParty.Party;
+            this.CampaignBehaviorManager.RegisterEvents();
+            this.CameraFollowParty = this.MainParty.Party;
         }
 
         private void OnAfterNewGameCreatedInternal()
         {
-            GiveGoldAction.ApplyBetweenCharacters(Hero.MainHero, null, Hero.MainHero.Gold, true);
-            GiveGoldAction.ApplyBetweenCharacters(null, Hero.MainHero, 1000, true);
+            GiveGoldAction.ApplyBetweenCharacters(Hero.MainHero, (Hero)null, Hero.MainHero.Gold, true);
+            GiveGoldAction.ApplyBetweenCharacters((Hero)null, Hero.MainHero, 1000, true);
             Hero.MainHero.Clan.Influence = 0.0f;
             Hero.MainHero.ChangeState(Hero.CharacterStates.Active);
-            GameInitTick();
-            _playerFormationPreferences = new Dictionary<CharacterObject, FormationClass>();
-            PlayerFormationPreferences =
-                _playerFormationPreferences.GetReadOnlyDictionary();
-            Current.DesertionEnabled = true;
+            this.GameInitTick();
+            this._playerFormationPreferences = new Dictionary<CharacterObject, FormationClass>();
+            this.PlayerFormationPreferences =
+                this._playerFormationPreferences.GetReadOnlyDictionary<CharacterObject, FormationClass>();
+            BOFCampaign.Current.DesertionEnabled = true;
         }
 
         protected override void DoLoadingForGameType(
@@ -1179,82 +1345,71 @@ namespace BOF.Campaign
             switch (gameTypeLoadingState)
             {
                 case GameTypeLoadingStates.InitializeFirstStep:
-                    CurrentGame.Initialize();
+                    this.CurrentGame.Initialize();
                     nextState = GameTypeLoadingStates.WaitSecondStep;
                     break;
                 case GameTypeLoadingStates.WaitSecondStep:
                     nextState = GameTypeLoadingStates.LoadVisualsThirdState;
                     break;
                 case GameTypeLoadingStates.LoadVisualsThirdState:
-                    if (GameMode == CampaignGameMode.Campaign)
-                        LoadMapScene();
+                    if (this.GameMode == CampaignGameMode.Campaign)
+                        this.LoadMapScene();
                     nextState = GameTypeLoadingStates.PostInitializeFourthState;
                     break;
                 case GameTypeLoadingStates.PostInitializeFourthState:
-                    CampaignGameStarter gameStarter = SandBoxManager.GameStarter;
-                    if (_gameLoadingType == GameLoadingType.SavedCampaign)
+                    CampaignGameStarter gameStarter = this.SandBoxManager.GameStarter;
+                    if (this._gameLoadingType == BOFCampaign.GameLoadingType.SavedCampaign)
                     {
-                        OnDataLoadFinished(gameStarter);
-                        CalculateAverageDistanceBetweenTowns();
-                        DetermineModules();
-                        MapEventManager.OnGameInitialized();
-                        
+                        this.OnDataLoadFinished(gameStarter);
+                        this.CalculateAverageDistanceBetweenTowns();
+                        this.DetermineModules();
+                        this.MapEventManager.OnGameInitialized();
                         foreach (Settlement settlement in Settlement.All)
                             settlement.Party.OnGameInitialized();
-                        
-                        foreach (MobileParty mobileParty in MobileParties.ToList())
+                        foreach (MobileParty mobileParty in this.MobileParties.ToList<MobileParty>())
                             mobileParty.Party.OnGameInitialized();
-                        
-                        CalculateCachedStatsOnLoad();
-                        OnGameLoaded(gameStarter);
-                        OnSessionStart(gameStarter);
-                        
+                        this.CalculateCachedStatsOnLoad();
+                        this.OnGameLoaded(gameStarter);
+                        this.OnSessionStart(gameStarter);
                         foreach (Hero allAliveHero in Hero.AllAliveHeroes)
                             allAliveHero.CheckInvalidEquipmentsAndReplaceIfNeeded();
-                        
                         foreach (Hero deadOrDisabledHero in Hero.DeadOrDisabledHeroes)
                             deadOrDisabledHero.CheckInvalidEquipmentsAndReplaceIfNeeded();
                     }
-                    else if (_gameLoadingType == GameLoadingType.NewCampaign)
+                    else if (this._gameLoadingType == BOFCampaign.GameLoadingType.NewCampaign)
                     {
-                        OnDataLoadFinished(gameStarter);
-                        CalculateAverageDistanceBetweenTowns();
+                        this.OnDataLoadFinished(gameStarter);
+                        this.CalculateAverageDistanceBetweenTowns();
                         MBSaveLoad.OnNewGame();
-                        InitializeMainParty();
-                        DetermineModules();
-                        
+                        this.InitializeMainParty();
+                        this.DetermineModules();
                         foreach (Settlement settlement in Settlement.All)
                             settlement.Party.OnGameInitialized();
-                        
-                        foreach (MobileParty mobileParty in MobileParties.ToList())
+                        foreach (MobileParty mobileParty in this.MobileParties.ToList<MobileParty>())
                             mobileParty.Party.OnGameInitialized();
-                        
                         foreach (Settlement settlement in Settlement.All)
                             settlement.OnGameCreated();
-                        
                         foreach (Clan clan in Clan.All)
                             clan.OnGameCreated();
-                        
                         MBObjectManager.Instance.RemoveTemporaryTypes();
-                        OnNewGameCreated(gameStarter);
-                        OnSessionStart(gameStarter);
+                        this.OnNewGameCreated(gameStarter);
+                        this.OnSessionStart(gameStarter);
                         Debug.Print("Finished starting a new game.");
                     }
 
-                    GameManager.OnAfterGameInitializationFinished(CurrentGame, gameStarter);
+                    this.GameManager.OnAfterGameInitializationFinished(this.CurrentGame, (object)gameStarter);
                     break;
             }
         }
 
         private void DetermineModules()
         {
-            if (_previouslyUsedModules == null)
-                _previouslyUsedModules = new List<string>();
-            
+            if (this._previouslyUsedModules == null)
+                this._previouslyUsedModules = new List<string>();
             foreach (string moduleName in SandBoxManager.Instance.ModuleManager.ModuleNames)
             {
-                if (!_previouslyUsedModules.Contains(moduleName))
-                    _previouslyUsedModules.Add(moduleName);
+                if (!this._previouslyUsedModules.Contains(moduleName))
+                    this._previouslyUsedModules.Add(moduleName);
             }
         }
 
@@ -1262,51 +1417,47 @@ namespace BOF.Campaign
         {
             if (!rec.PlayingInCampaignMode)
                 return;
-            
             CampaignEventDispatcher.Instance.BeforeMissionOpened();
         }
 
-        // TODO: Point this to correct module 
-        public override void InitializeParameters() => ManagedParameters.Instance.Initialize(ModuleHelper.GetXmlPath("Native", "managed_campaign_parameters"));
-        public void SetTimeControlModeLock(bool isLocked) => TimeControlModeLock = isLocked;
-        
+        public override void InitializeParameters() =>
+            ManagedParameters.Instance.Initialize(ModuleHelper.GetXmlPath("Native", "managed_campaign_parameters"));
+
+        public void SetTimeControlModeLock(bool isLocked) => this.TimeControlModeLock = isLocked;
+
         public void OnPlayerCharacterChanged()
         {
-            MainParty = Hero.MainHero.PartyBelongedTo;
+            this.MainParty = Hero.MainHero.PartyBelongedTo;
             if (Hero.MainHero.CurrentSettlement != null && !Hero.MainHero.IsPrisoner)
             {
-                if (MainParty == null)
+                if (this.MainParty == null)
                     LeaveSettlementAction.ApplyForCharacterOnly(Hero.MainHero);
                 else
-                    LeaveSettlementAction.ApplyForParty(MainParty);
+                    LeaveSettlementAction.ApplyForParty(this.MainParty);
             }
 
             if (Hero.MainHero.IsFugitive)
                 Hero.MainHero.ChangeState(Hero.CharacterStates.Active);
-            
-            PlayerTraitDeveloper = new HeroTraitDeveloper(Hero.MainHero);
-            
-            if (MainParty == null)
+            this.PlayerTraitDeveloper = new HeroTraitDeveloper(Hero.MainHero);
+            if (this.MainParty == null)
             {
-                MainParty = MobileParty.CreateParty("player_party_" + Hero.MainHero.StringId);
-                MainParty.ActualClan = Clan.PlayerClan;
-                
+                this.MainParty = MobileParty.CreateParty("player_party_" + Hero.MainHero.StringId);
+                this.MainParty.ActualClan = Clan.PlayerClan;
                 if (Hero.MainHero.IsPrisoner)
                 {
-                    MainParty.InitializeMobileParty(
-                        CurrentGame.ObjectManager.GetObject<PartyTemplateObject>("main_hero_party_template"),
+                    this.MainParty.InitializeMobileParty(
+                        this.CurrentGame.ObjectManager.GetObject<PartyTemplateObject>("main_hero_party_template"),
                         Hero.MainHero.GetPosition().AsVec2, 0.0f, troopNumberLimit: 0);
-                    MainParty.IsActive = false;
+                    this.MainParty.IsActive = false;
                 }
                 else
                 {
                     Vec3 position1 = Hero.MainHero.GetPosition();
                     Vec2 vec2;
-                    
                     if (!(position1.AsVec2 != Vec2.Zero))
                     {
-                        vec2 = SettlementHelper.FindRandomSettlement(s =>
-                            s.OwnerClan != null && !s.OwnerClan.IsAtWarWith(Clan.PlayerClan)).GetPosition2D;
+                        vec2 = SettlementHelper.FindRandomSettlement((Func<Settlement, bool>)(s =>
+                            s.OwnerClan != null && !s.OwnerClan.IsAtWarWith((IFaction)Clan.PlayerClan))).GetPosition2D;
                     }
                     else
                     {
@@ -1315,22 +1466,19 @@ namespace BOF.Campaign
                     }
 
                     Vec2 position2 = vec2;
-                    
-                    MainParty.InitializeMobileParty(CurrentGame.ObjectManager.GetObject<PartyTemplateObject>("main_hero_party_template"), position2, 0.0f, troopNumberLimit: 0);
-                    MainParty.IsActive = true;
-                    MainParty.MemberRoster.AddToCounts(Hero.MainHero.CharacterObject, 1, true);
+                    this.MainParty.InitializeMobileParty(
+                        this.CurrentGame.ObjectManager.GetObject<PartyTemplateObject>("main_hero_party_template"),
+                        position2, 0.0f, troopNumberLimit: 0);
+                    this.MainParty.IsActive = true;
+                    this.MainParty.MemberRoster.AddToCounts(Hero.MainHero.CharacterObject, 1, true);
                 }
             }
             else
-            {
                 Current.MainParty.IsVisible = true;
-            }
-                
 
             Current.MainParty.SetAsMainParty();
             PartyBase.MainParty.ItemRoster.UpdateVersion();
             PartyBase.MainParty.MemberRoster.UpdateVersion();
-            
             if (MobileParty.MainParty.IsActive)
             {
                 PartyBase.MainParty.SetAsCameraFollowParty();
@@ -1341,23 +1489,60 @@ namespace BOF.Campaign
 
             if (Hero.MainHero.Mother != null)
                 Hero.MainHero.Mother.HasMet = true;
-            
             if (Hero.MainHero.Father != null)
                 Hero.MainHero.Father.HasMet = true;
-            
-            MainParty.PaymentLimit = Current.Models.PartyWageModel.MaxWage;
+            this.MainParty.PaymentLimit = Current.Models.PartyWageModel.MaxWage;
         }
 
         public void SetPlayerFormationPreference(CharacterObject character, FormationClass formation)
         {
-            if (!_playerFormationPreferences.ContainsKey(character))
-                _playerFormationPreferences.Add(character, formation);
+            if (!this._playerFormationPreferences.ContainsKey(character))
+                this._playerFormationPreferences.Add(character, formation);
             else
-                _playerFormationPreferences[character] = formation;
+                this._playerFormationPreferences[character] = formation;
         }
 
         public override void OnStateChanged(GameState oldState)
         {
+        }
+        
+        protected override void AutoGeneratedInstanceCollectObjects(List<object> collectedObjects)
+        {
+            base.AutoGeneratedInstanceCollectObjects(collectedObjects);
+            collectedObjects.Add((object)this.Options);
+            collectedObjects.Add((object)this.TournamentManager);
+            collectedObjects.Add((object)this.autoEnterTown);
+            collectedObjects.Add((object)this.GameLogs);
+            collectedObjects.Add((object)this.KingdomManager);
+            collectedObjects.Add((object)this._campaignEntitySystem);
+            collectedObjects.Add((object)this._campaignPeriodicEventManager);
+            collectedObjects.Add((object)this._previouslyUsedModules);
+            collectedObjects.Add((object)this._playerFormationPreferences);
+            collectedObjects.Add((object)this._campaignBehaviorManager);
+            collectedObjects.Add((object)this._cameraFollowParty);
+            collectedObjects.Add((object)this._logEntryHistory);
+            collectedObjects.Add((object)this.CampaignObjectManager);
+            collectedObjects.Add((object)this.QuestManager);
+            collectedObjects.Add((object)this.IssueManager);
+            collectedObjects.Add((object)this.FactionManager);
+            collectedObjects.Add((object)this.CharacterRelationManager);
+            collectedObjects.Add((object)this.Romance);
+            collectedObjects.Add((object)this.PlayerCaptivity);
+            collectedObjects.Add((object)this.PlayerDefaultFaction);
+            collectedObjects.Add((object)this.AdjustedRandom);
+            collectedObjects.Add((object)this.GameMenuCallbackManager);
+            collectedObjects.Add((object)this.MapStateData);
+            collectedObjects.Add((object)this.MapTimeTracker);
+            CampaignTime.AutoGeneratedStaticCollectObjectsCampaignTime((object)this.CampaignStartTime,
+                collectedObjects);
+            collectedObjects.Add((object)this.SiegeEventManager);
+            collectedObjects.Add((object)this.MapEventManager);
+            collectedObjects.Add((object)this.PlayerEncounter);
+            collectedObjects.Add((object)this.BarterManager);
+            collectedObjects.Add((object)this.MainParty);
+            collectedObjects.Add((object)this.CampaignInformationManager);
+            collectedObjects.Add((object)this.VisualTrackerManager);
+            collectedObjects.Add((object)this.PlayerTraitDeveloper);
         }
 
         private struct PartyTickCachePerParty
@@ -1369,7 +1554,7 @@ namespace BOF.Campaign
 
         private class CampaignTickPartyDataCache
         {
-            public CampaignTickPartyDataCache() => CurrentCapacity = 0;
+            public CampaignTickPartyDataCache() => this.CurrentCapacity = 0;
 
             public PartyTickCachePerParty[] CacheData { get; private set; }
 
@@ -1383,15 +1568,14 @@ namespace BOF.Campaign
 
             public void ValidateMobilePartyTickDataCache(int requestedCapacity)
             {
-                if (CurrentCapacity >= requestedCapacity)
+                if (this.CurrentCapacity >= requestedCapacity)
                     return;
-                
-                int length = (int)(requestedCapacity * 1.10000002384186);
-                CacheData = new PartyTickCachePerParty[length];
-                ResultArray = new PathFaceRecord[length];
-                PositionArray = new float[length * 2];
-                MovedPartiesIndices = new int[length];
-                CurrentCapacity = length;
+                int length = (int)((double)requestedCapacity * 1.10000002384186);
+                this.CacheData = new PartyTickCachePerParty[length];
+                this.ResultArray = new PathFaceRecord[length];
+                this.PositionArray = new float[length * 2];
+                this.MovedPartiesIndices = new int[length];
+                this.CurrentCapacity = length;
             }
         }
     }

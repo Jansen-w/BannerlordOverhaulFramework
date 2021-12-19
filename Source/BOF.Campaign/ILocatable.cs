@@ -1,16 +1,16 @@
 using TaleWorlds.Library;
 
-namespace BOF.Campaign.Utility
+namespace BOF.Campaign
 {
     public interface ILocatable<T>
     {
-        [CachedData]
+        // [CachedData]
         int LocatorNodeIndex { get; set; }
 
-        [CachedData]
+        // [CachedData]
         T NextLocatable { get; set; }
 
-        [CachedData]
+        // [CachedData]
         Vec2 GetPosition2D { get; }
     }
 }
