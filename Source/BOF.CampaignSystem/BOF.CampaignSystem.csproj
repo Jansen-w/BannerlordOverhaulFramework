@@ -7,8 +7,8 @@
         <ProjectGuid>{963F3C8B-D0E3-4B58-8531-DE92CF3E8069}</ProjectGuid>
         <OutputType>Library</OutputType>
         <AppDesignerFolder>Properties</AppDesignerFolder>
-        <RootNamespace>BOF.Campaign</RootNamespace>
-        <AssemblyName>BOF.Campaign</AssemblyName>
+        <RootNamespace>BOF.CampaignSystem</RootNamespace>
+        <AssemblyName>BOF.CampaignSystem</AssemblyName>
         <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
     </PropertyGroup>
@@ -49,14 +49,34 @@
         <Reference Include="TaleWorlds.Library, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
           <HintPath>..\..\..\..\bin\Win64_Shipping_Client\TaleWorlds.Library.dll</HintPath>
         </Reference>
+        <Reference Include="TaleWorlds.LinQuick, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <HintPath>..\..\..\..\bin\Win64_Shipping_Client\TaleWorlds.LinQuick.dll</HintPath>
+        </Reference>
+        <Reference Include="TaleWorlds.Localization, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <HintPath>..\..\..\..\bin\Win64_Shipping_Client\TaleWorlds.Localization.dll</HintPath>
+        </Reference>
         <Reference Include="TaleWorlds.ObjectSystem, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
           <HintPath>..\..\..\..\bin\Win64_Shipping_Client\TaleWorlds.ObjectSystem.dll</HintPath>
         </Reference>
     </ItemGroup>
     <ItemGroup>
         <Compile Include="BOFCampaign.cs" />
+        <Compile Include="CampaignData.cs" />
+        <Compile Include="CampaignTime.cs" />
+        <Compile Include="CharacterObject.cs" />
+        <Compile Include="CharacterStatsModel.cs" />
+        <Compile Include="ConversationManager.cs" />
+        <Compile Include="ConversationSentence.cs" />
+        <Compile Include="DialogFlow.cs" />
+        <Compile Include="DialogFlowContext.cs" />
+        <Compile Include="DialogFlowLine.cs" />
+        <Compile Include="GameModels.cs" />
+        <Compile Include="Hero.cs" />
         <Compile Include="ILocatable.cs" />
         <Compile Include="LocatorGrid.cs" />
+        <Compile Include="LordPartyComponent.cs" />
+        <Compile Include="MapTimeTracker.cs" />
+        <Compile Include="MobileParty.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
     <ItemGroup>

@@ -14,7 +14,7 @@ using TaleWorlds.ObjectSystem;
 using Debug = System.Diagnostics.Debug;
 using ManagedParameters = TaleWorlds.Core.ManagedParameters;
 
-namespace BOF.Campaign
+namespace BOF.CampaignSystem
 {
     public class BOFCampaign : GameType
     {
@@ -176,7 +176,7 @@ namespace BOF.Campaign
 
         public IReadOnlyList<string> PreviouslyUsedModules => (IReadOnlyList<string>)this._previouslyUsedModules;
 
-        internal CampaignEventDispatcher CampaignEventDispatcher { get; private set; }
+        public CampaignEventDispatcher CampaignEventDispatcher { get; private set; }
 
         /*[SaveableProperty(80)]*/
         public string UniqueGameId { get; private set; }
@@ -220,7 +220,7 @@ namespace BOF.Campaign
         public PlayerCaptivity PlayerCaptivity { get; private set; }
 
         /*[SaveableProperty(17)]*/
-        internal Clan PlayerDefaultFaction { get; set; }
+        public Clan PlayerDefaultFaction { get; set; }
 
         public ICampaignMissionManager CampaignMissionManager { get; set; }
 
@@ -274,7 +274,7 @@ namespace BOF.Campaign
 
         public DefaultSiegeStrategies DefaultSiegeStrategies { get; private set; }
 
-        internal MBReadOnlyList<PerkObject> AllPerks { get; private set; }
+        public MBReadOnlyList<PerkObject> AllPerks { get; private set; }
 
         public PlayerUpdateTracker PlayerUpdateTracker { get; private set; }
 
@@ -282,38 +282,38 @@ namespace BOF.Campaign
 
         public DefaultVillageTypes DefaultVillageTypes { get; private set; }
 
-        internal MBReadOnlyList<TraitObject> AllTraits { get; private set; }
+        public MBReadOnlyList<TraitObject> AllTraits { get; private set; }
 
-        public DefaultFeats DefaultFeats { get; private set; }
+        public DefaultCulturalFeats DefaultFeats { get; private set; }
 
-        internal MBReadOnlyList<PolicyObject> AllPolicies { get; private set; }
+        public MBReadOnlyList<PolicyObject> AllPolicies { get; private set; }
 
-        internal MBReadOnlyList<BuildingType> AllBuildingTypes { get; private set; }
+        public MBReadOnlyList<BuildingType> AllBuildingTypes { get; private set; }
 
-        internal MBReadOnlyList<IssueEffect> AllIssueEffects { get; private set; }
+        public MBReadOnlyList<IssueEffect> AllIssueEffects { get; private set; }
 
-        internal MBReadOnlyList<SiegeStrategy> AllSiegeStrategies { get; private set; }
+        public MBReadOnlyList<SiegeStrategy> AllSiegeStrategies { get; private set; }
 
-        internal MBReadOnlyList<VillageType> AllVillageTypes { get; private set; }
+        public MBReadOnlyList<VillageType> AllVillageTypes { get; private set; }
 
-        internal MBReadOnlyList<SkillEffect> AllSkillEffects { get; private set; }
+        public MBReadOnlyList<SkillEffect> AllSkillEffects { get; private set; }
 
-        internal MBReadOnlyList<FeatObject> AllFeats { get; private set; }
+        public MBReadOnlyList<FeatObject> AllFeats { get; private set; }
 
-        internal MBReadOnlyList<SkillObject> AllSkills { get; private set; }
+        public MBReadOnlyList<SkillObject> AllSkills { get; private set; }
 
-        internal MBReadOnlyList<SiegeEngineType> AllSiegeEngineTypes { get; private set; }
+        public MBReadOnlyList<SiegeEngineType> AllSiegeEngineTypes { get; private set; }
 
-        internal MBReadOnlyList<ItemCategory> AllItemCategories { get; private set; }
+        public MBReadOnlyList<ItemCategory> AllItemCategories { get; private set; }
 
-        internal MBReadOnlyList<CharacterAttribute> AllCharacterAttributes { get; private set; }
+        public MBReadOnlyList<CharacterAttribute> AllCharacterAttributes { get; private set; }
 
-        internal MBReadOnlyList<ItemObject> AllItems { get; private set; }
+        public MBReadOnlyList<ItemObject> AllItems { get; private set; }
 
         /*[SaveableProperty(100)]*/
-        internal MapTimeTracker MapTimeTracker { get; private set; }
+        public MapTimeTracker MapTimeTracker { get; private set; }
 
-        public float RestTime { get; internal set; }
+        public float RestTime { get; set; }
 
         public bool TimeControlModeLock { get; private set; }
 
@@ -336,7 +336,7 @@ namespace BOF.Campaign
 
         public bool TrueSight { get; set; }
 
-        public static Campaign Current { get; private set; }
+        public static BOFCampaign Current { get; private set; }
 
         /*[SaveableProperty(36)]*/
         public CampaignTime CampaignStartTime { get; private set; }
@@ -353,12 +353,12 @@ namespace BOF.Campaign
         public GameLoadingType CampaignGameLoadingType => this._gameLoadingType;
 
         /*[SaveableProperty(40)]*/
-        public SiegeEventManager SiegeEventManager { get; internal set; }
+        public SiegeEventManager SiegeEventManager { get; set; }
 
         /*[SaveableProperty(41)]*/
-        public MapEventManager MapEventManager { get; internal set; }
+        public MapEventManager MapEventManager { get; set; }
 
-        internal CampaignEvents CampaignEvents { get; private set; }
+        public CampaignEvents CampaignEvents { get; private set; }
 
         public MenuContext CurrentMenuContext
         {
@@ -376,7 +376,7 @@ namespace BOF.Campaign
             }
         }
 
-        internal List<MBCampaignEvent> PeriodicCampaignEvents { get; private set; }
+        public List<MBCampaignEvent> PeriodicCampaignEvents { get; private set; }
 
         public bool IsMainPartyWaiting
         {
@@ -387,7 +387,7 @@ namespace BOF.Campaign
         /*[SaveableProperty(45)]*/
         private int _curMapFrame { get; set; }
 
-        internal LocatorGrid<Settlement> SettlementLocator
+        public LocatorGrid<Settlement> SettlementLocator
         {
             get
             {
@@ -397,7 +397,7 @@ namespace BOF.Campaign
             }
         }
 
-        internal LocatorGrid<MobileParty> MobilePartyLocator
+        public LocatorGrid<MobileParty> MobilePartyLocator
         {
             get
             {
@@ -410,11 +410,11 @@ namespace BOF.Campaign
         public IMapScene MapSceneWrapper => this._mapSceneWrapper;
 
         /*[SaveableProperty(54)]*/
-        public PlayerEncounter PlayerEncounter { get; internal set; }
+        public PlayerEncounter PlayerEncounter { get; set; }
 
-        [CachedData] internal LocationEncounter LocationEncounter { get; set; }
+        [CachedData] public LocationEncounter LocationEncounter { get; set; }
 
-        internal NameGenerator NameGenerator { get; private set; }
+        public NameGenerator NameGenerator { get; private set; }
 
         /*[SaveableProperty(58)]*/
         public BarterManager BarterManager { get; private set; }
@@ -500,13 +500,13 @@ namespace BOF.Campaign
 
         public override bool IsPartyWindowAccessibleAtMission => this.GameMode == CampaignGameMode.Campaign;
 
-        internal IReadOnlyList<Town> AllTowns => (IReadOnlyList<Town>)this._towns;
+        public IReadOnlyList<Town> AllTowns => (IReadOnlyList<Town>)this._towns;
 
-        internal IReadOnlyList<Town> AllCastles => (IReadOnlyList<Town>)this._castles;
+        public IReadOnlyList<Town> AllCastles => (IReadOnlyList<Town>)this._castles;
 
-        internal IReadOnlyList<Village> AllVillages => (IReadOnlyList<Village>)this._villages;
+        public IReadOnlyList<Village> AllVillages => (IReadOnlyList<Village>)this._villages;
 
-        internal IReadOnlyList<Hideout> AllHideouts => (IReadOnlyList<Hideout>)this._hideouts;
+        public IReadOnlyList<Hideout> AllHideouts => (IReadOnlyList<Hideout>)this._hideouts;
 
         public int CreateGameMenuIndex()
         {
@@ -520,11 +520,11 @@ namespace BOF.Campaign
         public void InitializeMainParty()
         {
             this.InitializeSinglePlayerReferences();
-            this.MainParty.InitializeMobileParty(
+            this.MainParty.InitializeMobilePartyAtPosition(
                 this.CurrentGame.ObjectManager.GetObject<PartyTemplateObject>("main_hero_party_template"),
-                this.DefaultStartingPosition, 0.0f);
+                this.DefaultStartingPosition);
             this.MainParty.ActualClan = Clan.PlayerClan;
-            this.MainParty.PartyComponent = (PartyComponent)new LordPartyComponent(Hero.MainHero);
+            this.MainParty.PartyComponent = (PartyComponent)new LordPartyComponent(Hero.MainHero, Hero.MainHero);
             this.MainParty.ItemRoster.AddToCounts(DefaultItems.Grain, 1);
         }
 
@@ -644,7 +644,7 @@ namespace BOF.Campaign
                 mobileParty.Party.UpdateVisibilityAndInspected();
         }
 
-        internal void HourlyTick(MBCampaignEvent campaignEvent, object[] delegateParams)
+        public void HourlyTick(MBCampaignEvent campaignEvent, object[] delegateParams)
         {
             CampaignEventDispatcher.Instance.HourlyTick();
             if (!(Game.Current.GameStateManager.ActiveState is MapState activeState))
@@ -652,7 +652,7 @@ namespace BOF.Campaign
             activeState.OnHourlyTick();
         }
 
-        internal void DailyTick(MBCampaignEvent campaignEvent, object[] delegateParams)
+        public void DailyTick(MBCampaignEvent campaignEvent, object[] delegateParams)
         {
             CampaignEventDispatcher.Instance.DailyTick();
             CampaignEventDispatcher.Instance.AfterDailyTick();
@@ -744,7 +744,7 @@ namespace BOF.Campaign
             this.SaveHandler.QuickSaveCurrentGame();
         }
 
-        internal void RealTick(float realDt)
+        public void RealTick(float realDt)
         {
             this.CheckMainPartyNeedsUpdate();
             this.TickMapTime(realDt);
@@ -865,7 +865,7 @@ namespace BOF.Campaign
             }
         }
 
-        internal void Tick()
+        public void Tick()
         {
             ++this._curMapFrame;
             ++this._curSessionFrame;
@@ -945,14 +945,14 @@ namespace BOF.Campaign
                 numberOfMembers);
         }
 
-        internal int GeneratePartyId(PartyBase party)
+        public int GeneratePartyId(PartyBase party)
         {
             int lastPartyIndex = this._lastPartyIndex;
             ++this._lastPartyIndex;
             return lastPartyIndex;
         }
 
-        internal void AddTrack(MobileParty target, Vec2 trackPosition, Vec2 trackDirection)
+        public void AddTrack(MobileParty target, Vec2 trackPosition, Vec2 trackDirection)
         {
             if (this._mapTracksCampaignBehavior.IsTrackDropped(target))
                 return;
@@ -1180,7 +1180,7 @@ namespace BOF.Campaign
                 this.InitializeCampaignObjectsOnAfterLoad();
             else if (this._gameLoadingType == GameLoadingType.NewCampaign ||
                      this._gameLoadingType == GameLoadingType.Tutorial)
-            this.CampaignObjectManager.InitializeOnNewGame();
+                this.CampaignObjectManager.InitializeOnNewGame();
             this.InitializeCachedLists();
             this.NameGenerator.Initialize();
             this.CurrentGame.OnGameStart();
@@ -1505,7 +1505,7 @@ namespace BOF.Campaign
         public override void OnStateChanged(GameState oldState)
         {
         }
-        
+
         protected override void AutoGeneratedInstanceCollectObjects(List<object> collectedObjects)
         {
             base.AutoGeneratedInstanceCollectObjects(collectedObjects);
@@ -1547,9 +1547,9 @@ namespace BOF.Campaign
 
         private struct PartyTickCachePerParty
         {
-            internal MobileParty mobileParty;
-            internal MobileParty.TickLocalVariables localVariables;
-            internal bool isInArmy;
+            public MobileParty mobileParty;
+            public MobileParty.TickLocalVariables localVariables;
+            public bool isInArmy;
         }
 
         private class CampaignTickPartyDataCache
