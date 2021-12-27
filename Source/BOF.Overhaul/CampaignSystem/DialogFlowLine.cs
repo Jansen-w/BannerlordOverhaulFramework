@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 
-namespace BOF.CampaignSystem
+namespace BOF.CampaignSystem.CampaignSystem
 {
     public class DialogFlowLine
     {

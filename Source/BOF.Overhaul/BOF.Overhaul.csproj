@@ -8,7 +8,7 @@
         <OutputType>Library</OutputType>
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace>BOF.CampaignSystem</RootNamespace>
-        <AssemblyName>BOF.CampaignSystem</AssemblyName>
+        <AssemblyName>BOF.Overhaul</AssemblyName>
         <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
     </PropertyGroup>
@@ -55,28 +55,53 @@
         <Reference Include="TaleWorlds.Localization, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
           <HintPath>..\..\..\..\bin\Win64_Shipping_Client\TaleWorlds.Localization.dll</HintPath>
         </Reference>
+        <Reference Include="TaleWorlds.ModuleManager, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <HintPath>..\..\..\..\bin\Win64_Shipping_Client\TaleWorlds.ModuleManager.dll</HintPath>
+        </Reference>
         <Reference Include="TaleWorlds.ObjectSystem, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
           <HintPath>..\..\..\..\bin\Win64_Shipping_Client\TaleWorlds.ObjectSystem.dll</HintPath>
         </Reference>
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="BOFCampaign.cs" />
-        <Compile Include="CampaignData.cs" />
-        <Compile Include="CampaignTime.cs" />
-        <Compile Include="CharacterObject.cs" />
-        <Compile Include="CharacterStatsModel.cs" />
-        <Compile Include="ConversationManager.cs" />
-        <Compile Include="ConversationSentence.cs" />
-        <Compile Include="DialogFlow.cs" />
-        <Compile Include="DialogFlowContext.cs" />
-        <Compile Include="DialogFlowLine.cs" />
-        <Compile Include="GameModels.cs" />
-        <Compile Include="Hero.cs" />
-        <Compile Include="ILocatable.cs" />
-        <Compile Include="LocatorGrid.cs" />
-        <Compile Include="LordPartyComponent.cs" />
-        <Compile Include="MapTimeTracker.cs" />
-        <Compile Include="MobileParty.cs" />
+        <Compile Include="CampaignSystem\BOFCampaign.cs" />
+        <Compile Include="CampaignSystem\CampaignData.cs" />
+        <Compile Include="CampaignSystem\CampaignObjectManager.cs" />
+        <Compile Include="CampaignSystem\CampaignTime.cs" />
+        <Compile Include="CampaignSystem\CharacterObject.cs" />
+        <Compile Include="CampaignSystem\CharacterStatsModel.cs" />
+        <Compile Include="CampaignSystem\Clan.cs" />
+        <Compile Include="CampaignSystem\ConversationManager.cs" />
+        <Compile Include="CampaignSystem\ConversationSentence.cs" />
+        <Compile Include="CampaignSystem\CultureObject.cs" />
+        <Compile Include="CampaignSystem\DialogFlow.cs" />
+        <Compile Include="CampaignSystem\DialogFlowContext.cs" />
+        <Compile Include="CampaignSystem\DialogFlowLine.cs" />
+        <Compile Include="CampaignSystem\GameModels.cs" />
+        <Compile Include="CampaignSystem\Hero.cs" />
+        <Compile Include="CampaignSystem\IFaction.cs" />
+        <Compile Include="CampaignSystem\ILocatable.cs" />
+        <Compile Include="CampaignSystem\Kingdom.cs" />
+        <Compile Include="CampaignSystem\LocatorGrid.cs" />
+        <Compile Include="CampaignSystem\LordPartyComponent.cs" />
+        <Compile Include="CampaignSystem\MapEvent.cs" />
+        <Compile Include="CampaignSystem\MapEventParty.cs" />
+        <Compile Include="CampaignSystem\MapEventSide.cs" />
+        <Compile Include="CampaignSystem\MapTimeTracker.cs" />
+        <Compile Include="CampaignSystem\MobileParty.cs" />
+        <Compile Include="CampaignSystem\PartyBase.cs" />
+        <Compile Include="CampaignSystem\PartyImpairmentModel.cs" />
+        <Compile Include="CampaignSystem\Settlement.cs" />
+        <Compile Include="CampaignSystem\SettlementComponent.cs" />
+        <Compile Include="Core\BasicCharacterObject.cs" />
+        <Compile Include="Core\BasicCultureObject.cs" />
+        <Compile Include="Core\CultureObject.cs" />
+        <Compile Include="Core\DefaultCharacterAttributes.cs" />
+        <Compile Include="Core\Game.cs" />
+        <Compile Include="Core\GameHandler.cs" />
+        <Compile Include="Core\GameManagerBase.cs" />
+        <Compile Include="Core\GameManagerComponent.cs" />
+        <Compile Include="Core\GameType.cs" />
+        <Compile Include="Core\WeaponDescription.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
     <ItemGroup>

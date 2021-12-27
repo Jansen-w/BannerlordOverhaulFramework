@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
-namespace BOF.CampaignSystem
+namespace BOF.CampaignSystem.CampaignSystem
 {
     public struct CampaignTime : IComparable<CampaignTime>
     {

@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
-using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 
-namespace BOF.CampaignSystem
+namespace BOF.CampaignSystem.CampaignSystem
 {
   public class DialogFlow
   {

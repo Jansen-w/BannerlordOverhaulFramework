@@ -16,14 +16,14 @@ using TaleWorlds.LinQuick;
 using TaleWorlds.Localization;
 using TaleWorlds.ObjectSystem;
 
-namespace BOF.CampaignSystem
+namespace BOF.CampaignSystem.CampaignSystem
 {
-    public sealed class CharacterObject : BasicCharacterObject, ICharacterData
+    public class CharacterObject : Core.BasicCharacterObject, ICharacterData
     {
         private CharacterRestrictionFlags _characterRestrictionFlags;
 
         //[SaveableField(101)]
-        private TaleWorlds.CampaignSystem.Hero _heroObject;
+        private Hero _heroObject;
 
         private string _originCharacterStringId;
 
@@ -70,7 +70,7 @@ namespace BOF.CampaignSystem
 
         public bool IsOriginalCharacter => this._originCharacter == null && this._originCharacterStringId == null;
 
-        public TaleWorlds.CampaignSystem.Hero HeroObject
+        public Hero HeroObject
         {
             get => this._heroObject;
             internal set => this._heroObject = value;
@@ -213,7 +213,7 @@ namespace BOF.CampaignSystem
             return characterObject;
         }
 
-        public static CharacterObject PlayerCharacter => Game.Current.PlayerTroop as CharacterObject;
+        public static CharacterObject PlayerCharacter => Core.Game.Current.PlayerTroop as CharacterObject;
 
         public static CharacterObject OneToOneConversationCharacter =>
             BOFCampaign.Current.ConversationManager.OneToOneConversationCharacter;

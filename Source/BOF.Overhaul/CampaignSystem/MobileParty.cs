@@ -1,8 +1,7 @@
-using Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using BOF.CampaignSystem;
+using Helpers;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment.Managers;
@@ -11,9 +10,8 @@ using TaleWorlds.CampaignSystem.Siege;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
-using TaleWorlds.ObjectSystem;
 
-namespace BOF.CampaignSystem
+namespace BOF.CampaignSystem.CampaignSystem
 {
   public class MobileParty : 
     CampaignObjectBase,
@@ -32,9 +30,9 @@ namespace BOF.CampaignSystem
     public const int DefaultPartyTradeInitialGold = 5000;
     //[SaveableField(1001)]
     private Settlement _currentSettlement;
-    [CachedData]
+    // //[CachedData]
     private List<MobileParty> _lastTargetedParties;
-    [CachedData]
+    // //[CachedData]
     private List<MobileParty> _attachedParties;
     //[SaveableField(1046)]
     private MobileParty _attachedTo;
@@ -65,7 +63,7 @@ namespace BOF.CampaignSystem
     private bool _isInspected;
     //[SaveableField(1955)]
     private CampaignTime _disorganizedUntilTime;
-    [CachedData]
+    ////[CachedData]
     private int _partyPureSpeedLastCheckVersion = -1;
     //[SaveableField(1027)]
     private ulong _partyLastCheckPositionVersion;
@@ -73,21 +71,21 @@ namespace BOF.CampaignSystem
     private bool _partyLastCheckIsPrisoner;
     //[SaveableField(1029)]
     private float _pureSpeed = 1f;
-    [CachedData]
+    //[CachedData]
     private ExplainedNumber _pureSpeedExplainer;
     //[SaveableField(1030)]
     private float _lastCalculatedFinalSpeed = 1f;
     //[SaveableField(1031)]
     private bool _partyLastCheckAtNight;
-    [CachedData]
+    //[CachedData]
     private int _itemRosterVersionNo = -1;
-    [CachedData]
+    //[CachedData]
     private int _partySizeRatioLastCheckVersion = -1;
-    [CachedData]
+    //[CachedData]
     private int _latestUsedPaymentRatio = -1;
-    [CachedData]
+    //[CachedData]
     private float _cachedPartySizeRatio = 1f;
-    [CachedData]
+    //[CachedData]
     private int _cachedPartySizeLimit;
     //[SaveableField(1059)]
     private BesiegerCamp _besiegerCamp;
@@ -109,7 +107,7 @@ namespace BOF.CampaignSystem
     private float _avoidInitiative = 1f;
     //[SaveableField(1035)]
     private Army _army;
-    [CachedData]
+    //[CachedData]
     private bool _isDisorganized;
     //[SaveableField(1959)]
     private bool _isCurrentlyUsedByAQuest;
@@ -123,16 +121,16 @@ namespace BOF.CampaignSystem
     private int _numberOfFleeingsAtLastTravel;
     //[SaveableField(1071)]
     public Vec2 AverageFleeTargetDirection;
-    [CachedData]
+    //[CachedData]
     private PathFaceRecord _targetAiFaceIndex = PathFaceRecord.NullFaceRecord;
-    [CachedData]
+    //[CachedData]
     private PathFaceRecord _moveTargetAiFaceIndex = PathFaceRecord.NullFaceRecord;
     //[SaveableField(1070)]
     private Vec2 _aiPathLastPosition;
-    [CachedData]
+    //[CachedData]
     private PathFaceRecord _aiPathLastFace;
     private bool _aiPathNotFound;
-    [CachedData]
+    //[CachedData]
     private MobilePartiesAroundPositionList _partiesAroundPosition;
     //[SaveableField(1068)]
     private bool _aiBehaviorResetNeeded;
@@ -144,19 +142,19 @@ namespace BOF.CampaignSystem
     private bool _defaultBehaviorNeedsUpdate;
     //[SaveableField(1067)]
     private Vec2 _lastTrackPosition;
-    [CachedData]
+    //[CachedData]
     private int _locatorNodeIndex;
     //[SaveableField(1120)]
     private Clan _actualClan;
     //[SaveableField(1200)]
     private float _moraleDueToEvents;
-    [CachedData]
+    //[CachedData]
     private Vec2 _errorPosition;
-    [CachedData]
+    //[CachedData]
     private float _lastVisualSpeed;
-    [CachedData]
+    //[CachedData]
     private int _curTick = 3;
-    [CachedData]
+    //[CachedData]
     private float _cachedComputedSpeed;
     public const int ClanRoleAssignmentMinimumSkillValue = 0;
     //[SaveableField(210)]
@@ -214,7 +212,7 @@ namespace BOF.CampaignSystem
     //[SaveableProperty(1090)]
     public MobileParty.PartyObjective Objective { get; private set; }
 
-    [CachedData]
+    //[CachedData]
     MobileParty ILocatable<MobileParty>.NextLocatable { get; set; }
 
     //[SaveableProperty(1019)]
@@ -275,16 +273,16 @@ namespace BOF.CampaignSystem
     //[SaveableProperty(1960)]
     public CampaignTime StationaryStartTime { get; private set; }
 
-    [CachedData]
+    //[CachedData]
     public bool ForceAiNoPathMode { get; set; }
 
-    [CachedData]
+    //[CachedData]
     public int PathBegin { get; private set; }
 
-    [CachedData]
+    //[CachedData]
     public NavigationPath Path { get; private set; }
 
-    [CachedData]
+    //[CachedData]
     public int VersionNo { get; private set; }
 
     //[SaveableProperty(1080)]
@@ -1099,7 +1097,7 @@ namespace BOF.CampaignSystem
       this._lastTargetedParties.RemoveAt(index1);
     }
 
-    [CachedData]
+    //[CachedData]
     public PathFaceRecord CurrentNavigationFace { get; private set; }
 
     internal void HourlyTick()
@@ -3551,7 +3549,7 @@ label_39:;
       }
     }
 
-    [CachedData]
+    //[CachedData]
     public bool IsLordParty { get; private set; }
 
     private void UpdatePartyComponentFlags()
@@ -3566,25 +3564,25 @@ label_39:;
       this.IsBandit = this._partyComponent is BanditPartyComponent;
     }
 
-    [CachedData]
+    //[CachedData]
     public bool IsVillager { get; private set; }
 
-    [CachedData]
+    //[CachedData]
     public bool IsMilitia { get; private set; }
 
-    [CachedData]
+    //[CachedData]
     public bool IsCaravan { get; private set; }
 
-    [CachedData]
+    //[CachedData]
     public bool IsGarrison { get; private set; }
 
-    [CachedData]
+    //[CachedData]
     public bool IsCommonAreaParty { get; private set; }
 
-    [CachedData]
+    //[CachedData]
     public bool IsCustomParty { get; private set; }
 
-    [CachedData]
+    //[CachedData]
     public bool IsBandit { get; private set; }
 
     public bool IsBanditBossParty => this.IsBandit && this.BanditPartyComponent.IsBossParty;

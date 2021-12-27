@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 
-namespace BOF.CampaignSystem
+namespace BOF.CampaignSystem.CampaignSystem
 {
     public sealed class GameModels : GameModelsManager
     {
@@ -54,7 +54,7 @@ namespace BOF.CampaignSystem
 
         public CharacterDevelopmentModel CharacterDevelopmentModel { get; private set; }
 
-        public TaleWorlds.CampaignSystem.CharacterStatsModel CharacterStatsModel { get; private set; }
+        public CharacterStatsModel CharacterStatsModel { get; private set; }
 
         public ItemDiscardModel ItemDiscardModel { get; private set; }
 

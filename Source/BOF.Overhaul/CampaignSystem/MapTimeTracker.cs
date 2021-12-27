@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace BOF.CampaignSystem
+namespace BOF.CampaignSystem.CampaignSystem
 {
     public class MapTimeTracker
     {

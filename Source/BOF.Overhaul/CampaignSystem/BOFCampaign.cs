@@ -14,7 +14,7 @@ using TaleWorlds.ObjectSystem;
 using Debug = System.Diagnostics.Debug;
 using ManagedParameters = TaleWorlds.Core.ManagedParameters;
 
-namespace BOF.CampaignSystem
+namespace BOF.CampaignSystem.CampaignSystem
 {
     public class BOFCampaign : GameType
     {
@@ -528,24 +528,24 @@ namespace BOF.CampaignSystem
             this.MainParty.ItemRoster.AddToCounts(DefaultItems.Grain, 1);
         }
 
-        [LoadInitializationCallback]
-        private void OnLoad(MetaData metaData, ObjectLoadData objectLoadData)
-        {
-            this._campaignEntitySystem = new EntitySystem<CampaignEntityComponent>();
-            this._partyUpgrader = new PartyUpgrader();
-            if (this.BarterManager == null)
-                this.BarterManager = new BarterManager();
-            this.SpeedUpMultiplier = 4f;
-            this._mobilePartyTickDataCache = new Campaign.CampaignTickPartyDataCache();
-            if (this._playerFormationPreferences == null)
-                this._playerFormationPreferences = new Dictionary<CharacterObject, FormationClass>();
-            this.PlayerFormationPreferences =
-                this._playerFormationPreferences.GetReadOnlyDictionary<CharacterObject, FormationClass>();
-            if (this.CampaignObjectManager != null)
-                return;
-            this.CampaignObjectManager = new CampaignObjectManager();
-            this.CampaignObjectManager.SetForceCopyListsForSaveCompability();
-        }
+        // [LoadInitializationCallback]
+        // private void OnLoad(MetaData metaData, ObjectLoadData objectLoadData)
+        // {
+        //     this._campaignEntitySystem = new EntitySystem<CampaignEntityComponent>();
+        //     this._partyUpgrader = new PartyUpgrader();
+        //     if (this.BarterManager == null)
+        //         this.BarterManager = new BarterManager();
+        //     this.SpeedUpMultiplier = 4f;
+        //     this._mobilePartyTickDataCache = new Campaign.CampaignTickPartyDataCache();
+        //     if (this._playerFormationPreferences == null)
+        //         this._playerFormationPreferences = new Dictionary<CharacterObject, FormationClass>();
+        //     this.PlayerFormationPreferences =
+        //         this._playerFormationPreferences.GetReadOnlyDictionary<CharacterObject, FormationClass>();
+        //     if (this.CampaignObjectManager != null)
+        //         return;
+        //     this.CampaignObjectManager = new CampaignObjectManager();
+        //     this.CampaignObjectManager.SetForceCopyListsForSaveCompability();
+        // }
 
         private void InitializeForSavedGame()
         {

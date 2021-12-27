@@ -1,6 +1,6 @@
 using TaleWorlds.Library;
 
-namespace BOF.CampaignSystem
+namespace BOF.CampaignSystem.CampaignSystem
 {
     public interface ILocatable<T>
     {

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using TaleWorlds.Library;
 
-namespace BOF.CampaignSystem
+namespace BOF.CampaignSystem.CampaignSystem
 {
   public class LocatorGrid<T>
   {

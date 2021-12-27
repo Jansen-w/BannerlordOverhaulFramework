@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Xml;
 using Helpers;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Conversation;
@@ -12,7 +10,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
-namespace BOF.CampaignSystem
+namespace BOF.CampaignSystem.CampaignSystem
 {
     public class ConversationManager
     {
@@ -45,7 +43,7 @@ namespace BOF.CampaignSystem
         private Dictionary<string, int> stateMap;
         private List<IAgent> _conversationAgents = new List<IAgent>();
         public bool CurrentConversationIsFirst;
-        private TaleWorlds.CampaignSystem.MobileParty _conversationParty;
+        private MobileParty _conversationParty;
         private IConversationStateHandler _handler;
         private static TaleWorlds.CampaignSystem.Conversation.Persuasion.Persuasion _persuasion;
 
@@ -651,7 +649,7 @@ namespace BOF.CampaignSystem
 
         public bool IsAgentInConversation(IAgent agent) => this._conversationAgents.Contains(agent);
 
-        public TaleWorlds.CampaignSystem.MobileParty ConversationParty => this._conversationParty;
+        public MobileParty ConversationParty => this._conversationParty;
 
         public bool NeedsToActivateForMapConversation { get; private set; }
 
