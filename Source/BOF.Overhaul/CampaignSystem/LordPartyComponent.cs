@@ -3,7 +3,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
-namespace BOF.CampaignSystem.CampaignSystem
+namespace BOF.Overhaul.CampaignSystem
 {
   public class LordPartyComponent : WarPartyComponent
   {
@@ -75,7 +75,7 @@ namespace BOF.CampaignSystem.CampaignSystem
       mobileParty.AddElementToMemberRoster(this.Owner.CharacterObject, 1, true);
       mobileParty.ActualClan = this.Owner.Clan;
       int troopNumberLimit = this.Owner == Hero.MainHero || this.Owner.Clan == Clan.PlayerClan ? 0 : (int) MathF.Min(this.Owner.Clan.IsRebelClan ? 40f : 19f, (this.Owner.Clan.IsRebelClan ? 0.2f : 0.1f) * (float) mobileParty.Party.PartySizeLimit);
-      if (!TaleWorlds.CampaignSystem.Campaign.Current.GameStarted)
+      if (!BOFCampaign.Current.GameStarted)
       {
         float num = (float) (1.0 - (double) MBRandom.RandomFloat * (double) MathF.Sqrt(MBRandom.RandomFloat));
         troopNumberLimit = (int) ((double) mobileParty.Party.PartySizeLimit * (double) num);

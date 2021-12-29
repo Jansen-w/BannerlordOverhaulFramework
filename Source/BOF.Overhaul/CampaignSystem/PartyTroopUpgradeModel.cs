@@ -1,0 +1,42 @@
+using TaleWorlds.CampaignSystem;
+using TaleWorlds.Core;
+
+namespace BOF.Overhaul.CampaignSystem
+{
+    public abstract class PartyTroopUpgradeModel : GameModel
+    {
+        public abstract bool CanPartyUpgradeTroopToTarget(
+            PartyBase party,
+            CharacterObject character,
+            CharacterObject target);
+
+        public abstract bool IsTroopUpgradeable(PartyBase party, CharacterObject character);
+
+        public abstract bool DoesPartyHaveRequiredItemsForUpgrade(
+            PartyBase party,
+            CharacterObject upgradeTarget);
+
+        public abstract bool DoesPartyHaveRequiredPerksForUpgrade(
+            PartyBase party,
+            CharacterObject character,
+            CharacterObject upgradeTarget,
+            out PerkObject requiredPerk);
+
+        public abstract bool CanTroopGainXp(PartyBase owner, CharacterObject character);
+
+        public abstract int GetGoldCostForUpgrade(
+            PartyBase party,
+            CharacterObject characterObject,
+            CharacterObject upgradeTarget);
+
+        public abstract int GetXpCostForUpgrade(
+            PartyBase party,
+            CharacterObject characterObject,
+            CharacterObject upgradeTarget);
+
+        public abstract int GetSkillXpFromUpgradingTroops(
+            PartyBase party,
+            CharacterObject troop,
+            int numberOfTroops);
+    }
+}

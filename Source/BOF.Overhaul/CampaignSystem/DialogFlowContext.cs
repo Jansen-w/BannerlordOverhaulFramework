@@ -1,4 +1,4 @@
-namespace BOF.CampaignSystem.CampaignSystem
+namespace BOF.Overhaul.CampaignSystem
 {
     public class DialogFlowContext
     {

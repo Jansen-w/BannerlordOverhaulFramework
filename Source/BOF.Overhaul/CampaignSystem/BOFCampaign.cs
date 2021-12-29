@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Helpers;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Encyclopedia;
@@ -14,7 +13,9 @@ using TaleWorlds.ObjectSystem;
 using Debug = System.Diagnostics.Debug;
 using ManagedParameters = TaleWorlds.Core.ManagedParameters;
 
-namespace BOF.CampaignSystem.CampaignSystem
+using FactionManager = BOF.Overhaul.Helpers.FactionManager;
+
+namespace BOF.Overhaul.CampaignSystem
 {
     public class BOFCampaign : GameType
     {

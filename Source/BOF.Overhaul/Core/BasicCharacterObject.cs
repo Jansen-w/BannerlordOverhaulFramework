@@ -6,7 +6,7 @@ using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.ObjectSystem;
 
-namespace BOF.CampaignSystem.Core
+namespace BOF.Overhaul.Core
 {
   public class BasicCharacterObject : MBObjectBase
   {
@@ -284,5 +284,13 @@ namespace BOF.CampaignSystem.Core
     //   this._isRanged = this.DefaultFormationClass == FormationClass.HorseArcher || this.DefaultFormationClass == FormationClass.Ranged;
     //   this._isMounted = this.DefaultFormationClass == FormationClass.Cavalry || this.DefaultFormationClass == FormationClass.HorseArcher;
     // }
+    
+    protected int FetchDefaultFormationGroup(string innerText)
+    {
+      FormationClass result;
+      return Enum.TryParse<FormationClass>(innerText, true, out result) ? (int) result : -1;
+    }
+
+    public virtual FormationClass GetFormationClass(IBattleCombatant owner) => this.DefaultFormationClass;
   }
 }

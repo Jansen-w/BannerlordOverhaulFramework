@@ -10,7 +10,7 @@ using TaleWorlds.Library;
 using TaleWorlds.LinQuick;
 using TaleWorlds.Localization;
 
-namespace BOF.CampaignSystem.CampaignSystem
+namespace BOF.Overhaul.CampaignSystem
 {
   public class MapEventSide
   {

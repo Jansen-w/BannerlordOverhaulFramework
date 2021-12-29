@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
-using Helpers;
+using BOF.Overhaul.Helpers;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
@@ -16,9 +16,9 @@ using TaleWorlds.LinQuick;
 using TaleWorlds.Localization;
 using TaleWorlds.ObjectSystem;
 
-namespace BOF.CampaignSystem.CampaignSystem
+namespace BOF.Overhaul.CampaignSystem
 {
-    public class CharacterObject : Core.BasicCharacterObject, ICharacterData
+    public class CharacterObject : Core.BasicCharacterObject, Core.ICharacterData
     {
         private CharacterRestrictionFlags _characterRestrictionFlags;
 
@@ -39,7 +39,7 @@ namespace BOF.CampaignSystem.CampaignSystem
         public override TextObject Name => this.IsHero ? this.HeroObject.Name : base.Name;
 
         public string EncyclopediaLink => !this.IsHero
-            ? TaleWorlds.CampaignSystem.Campaign.Current.EncyclopediaManager.GetIdentifier(typeof(CharacterObject)) +
+            ? BOFCampaign.Current.EncyclopediaManager.GetIdentifier(typeof(CharacterObject)) +
               "-" + this.StringId
             : this._heroObject.EncyclopediaLink;
 
@@ -49,7 +49,7 @@ namespace BOF.CampaignSystem.CampaignSystem
             {
                 if (this.IsHero)
                     return this._heroObject.EncyclopediaLinkWithName;
-                return TaleWorlds.CampaignSystem.Campaign.Current.EncyclopediaManager.GetPageOf(typeof(CharacterObject))
+                return BOFCampaign.Current.EncyclopediaManager.GetPageOf(typeof(CharacterObject))
                     .IsValidEncyclopediaItem((object)this)
                     ? HyperlinkTexts.GetUnitHyperlinkText(this.EncyclopediaLink, this.Name)
                     : this.Name;
@@ -73,7 +73,7 @@ namespace BOF.CampaignSystem.CampaignSystem
         public Hero HeroObject
         {
             get => this._heroObject;
-            internal set => this._heroObject = value;
+            set => this._heroObject = value;
         }
 
         public override MBReadOnlyList<Equipment> AllEquipments
@@ -209,7 +209,7 @@ namespace BOF.CampaignSystem.CampaignSystem
             characterObject.BeardTags = character.BeardTags;
             characterObject._civilianEquipmentTemplate = character._civilianEquipmentTemplate;
             characterObject._battleEquipmentTemplate = character._battleEquipmentTemplate;
-            characterObject.InitializeEquipmentsOnLoad((BasicCharacterObject)character);
+            characterObject.InitializeEquipmentsOnLoad((Core.BasicCharacterObject)character);
             return characterObject;
         }
 
@@ -239,7 +239,7 @@ namespace BOF.CampaignSystem.CampaignSystem
                 if (this.IsHero)
                     this.HeroObject.Culture = value;
                 else
-                    this.Culture = (BasicCultureObject)value;
+                    this.Culture = value;
             }
         }
 
@@ -284,7 +284,7 @@ namespace BOF.CampaignSystem.CampaignSystem
         {
             get
             {
-                TaleWorlds.CampaignSystem.Hero heroObject = this.HeroObject;
+                Hero heroObject = this.HeroObject;
                 return heroObject == null ? base.Age : heroObject.Age;
             }
         }
@@ -332,7 +332,7 @@ namespace BOF.CampaignSystem.CampaignSystem
                     MBObjectManager.Instance.GetObject<CharacterObject>(this._originCharacterStringId);
             }
 
-            this.InitializeHeroBasicCharacterOnAfterLoad((BasicCharacterObject)this._originCharacter);
+            this.InitializeHeroBasicCharacterOnAfterLoad(_originCharacter);
             this._occupation = this._originCharacter._occupation;
             this.IsChildTemplate = this._originCharacter.IsChildTemplate;
             this._basicName = this._originCharacter._basicName;

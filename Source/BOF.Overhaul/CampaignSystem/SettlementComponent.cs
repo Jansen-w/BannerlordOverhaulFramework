@@ -5,7 +5,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Localization;
 using TaleWorlds.ObjectSystem;
 
-namespace BOF.CampaignSystem.CampaignSystem
+namespace BOF.Overhaul.CampaignSystem
 {
   public abstract class SettlementComponent : MBObjectBase
   {
@@ -31,7 +31,7 @@ namespace BOF.CampaignSystem.CampaignSystem
     public PartyBase Owner
     {
       get => this._owner;
-      internal set
+      set
       {
         if (this._owner == value)
           return;

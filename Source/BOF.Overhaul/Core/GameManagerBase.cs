@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using TaleWorlds.Core;
 
-namespace BOF.CampaignSystem.Core
+namespace BOF.Overhaul.Core
 {
     public abstract class GameManagerBase
     {

@@ -7,7 +7,7 @@ using TaleWorlds.CampaignSystem.CharacterDevelopment.Managers;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 
-namespace BOF.CampaignSystem.CampaignSystem
+namespace BOF.Overhaul.CampaignSystem
 {
     public class MapEventParty
     {
@@ -204,7 +204,7 @@ namespace BOF.CampaignSystem.CampaignSystem
             if (isTeamKill)
                 return;
             int xpAmount;
-            Campaign.Current.Models.CombatXpModel.GetXpFromHit(troop, (CharacterObject)null, attackedTroop, this.Party,
+            BOFCampaign.Current.Models.CombatXpModel.GetXpFromHit(troop, (CharacterObject)null, attackedTroop, this.Party,
                 damage, isFatal,
                 isSimulatedHit ? CombatXpModel.MissionTypeEnum.SimulationBattle : CombatXpModel.MissionTypeEnum.Battle,
                 out xpAmount);
@@ -232,15 +232,15 @@ namespace BOF.CampaignSystem.CampaignSystem
             foreach (FlattenedTroopRosterElement troopRosterElement in this._roster)
             {
                 CharacterObject troop = troopRosterElement.Troop;
-                bool flag = Campaign.Current.Models.PartyTroopUpgradeModel.CanTroopGainXp(this.Party, troop);
+                bool flag = BOFCampaign.Current.Models.PartyTroopUpgradeModel.CanTroopGainXp(this.Party, troop);
                 if (((troopRosterElement.IsKilled ? 0 : (troopRosterElement.XpGained > 0 ? 1 : 0)) & (flag ? 1 : 0)) !=
                     0)
                 {
                     int xpGainFromBattles =
-                        Campaign.Current.Models.PartyTrainingModel.CalculateXpGainFromBattles(troopRosterElement,
+                        BOFCampaign.Current.Models.PartyTrainingModel.CalculateXpGainFromBattles(troopRosterElement,
                             this.Party);
                     int sharedXp =
-                        Campaign.Current.Models.PartyTrainingModel.GenerateSharedXp(troop, xpGainFromBattles,
+                        BOFCampaign.Current.Models.PartyTrainingModel.GenerateSharedXp(troop, xpGainFromBattles,
                             this.Party.MobileParty);
                     if (sharedXp > 0)
                     {

@@ -1,6 +1,6 @@
 using TaleWorlds.Core;
 
-namespace BOF.CampaignSystem.Core
+namespace BOF.Overhaul.Core
 {
     public abstract class GameHandler : IEntityComponent
     {

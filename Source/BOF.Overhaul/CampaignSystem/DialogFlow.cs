@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 
-namespace BOF.CampaignSystem.CampaignSystem
+namespace BOF.Overhaul.CampaignSystem
 {
   public class DialogFlow
   {

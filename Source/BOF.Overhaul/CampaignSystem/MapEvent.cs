@@ -10,7 +10,7 @@ using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.ObjectSystem;
 
-namespace BOF.CampaignSystem.CampaignSystem
+namespace BOF.Overhaul.CampaignSystem
 {
   public sealed class MapEvent : MBObjectBase, IMapEntity
   {
@@ -229,12 +229,12 @@ namespace BOF.CampaignSystem.CampaignSystem
 
     public bool IsSiegeOutside => this._mapEventType == MapEvent.BattleTypes.SiegeOutside;
 
-    public MapEvent() => this.MapEventVisual = Campaign.Current.VisualCreator.CreateMapEventVisual(this);
+    public MapEvent() => this.MapEventVisual = BOFCampaign.Current.VisualCreator.CreateMapEventVisual(this);
 
     public MapEvent(Vec2 position)
     {
       this.Position = position;
-      this.MapEventVisual = Campaign.Current.VisualCreator.CreateMapEventVisual(this);
+      this.MapEventVisual = BOFCampaign.Current.VisualCreator.CreateMapEventVisual(this);
     }
 
     protected override void OnBeforeLoad()
@@ -261,7 +261,7 @@ namespace BOF.CampaignSystem.CampaignSystem
       }
       if (!this.IsFinalized)
       {
-        this.MapEventVisual = Campaign.Current.VisualCreator.CreateMapEventVisual(this);
+        this.MapEventVisual = BOFCampaign.Current.VisualCreator.CreateMapEventVisual(this);
         this.MapEventVisual.Initialize(this.Position, this.GetBattleSizeValue(), this.AttackerSide.LeaderParty != PartyBase.MainParty && this.DefenderSide.LeaderParty != PartyBase.MainParty, this.IsVisible);
       }
       if (!this.IsRaid || this.MapEventSettlement.Party.MapEvent != null)
@@ -583,7 +583,7 @@ namespace BOF.CampaignSystem.CampaignSystem
         PartyBase party2 = party1.Party;
         if (party2.LeaderHero != null)
         {
-          int goldLossAfterDefeat = Campaign.Current.Models.BattleRewardModel.CalculateGoldLossAfterDefeat(party2.LeaderHero);
+          int goldLossAfterDefeat = BOFCampaign.Current.Models.BattleRewardModel.CalculateGoldLossAfterDefeat(party2.LeaderHero);
           num1 += (float) goldLossAfterDefeat;
           party1.GoldLost = goldLossAfterDefeat;
         }
@@ -618,7 +618,7 @@ namespace BOF.CampaignSystem.CampaignSystem
       PartyBase strikedParty,
       float strikerAdvantage)
     {
-      return Campaign.Current.Models.CombatSimulationModel.SimulateHit(strikerTroop, strikedTroop, strikerParty, strikedParty, strikerAdvantage, this);
+      return BOFCampaign.Current.Models.CombatSimulationModel.SimulateHit(strikerTroop, strikedTroop, strikerParty, strikedParty, strikerAdvantage, this);
     }
 
     private void SimulateBattleForRound(BattleSideEnum side, float advantage)
@@ -664,7 +664,7 @@ namespace BOF.CampaignSystem.CampaignSystem
         return false;
       if (this.IsPlayerSimulation && allocatedTroopParty2 == PartyBase.MainParty)
       {
-        float damageMultiplier = Campaign.Current.Models.DifficultyModel.GetPlayerTroopsReceivedDamageMultiplier();
+        float damageMultiplier = BOFCampaign.Current.Models.DifficultyModel.GetPlayerTroopsReceivedDamageMultiplier();
         damage = MBRandom.RoundRandomized((float) damage * damageMultiplier);
       }
       DamageTypes damageType = (double) MBRandom.RandomFloat < 0.300000011920929 ? DamageTypes.Blunt : DamageTypes.Cut;

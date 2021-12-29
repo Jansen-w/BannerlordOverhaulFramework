@@ -12,7 +12,7 @@ using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.ObjectSystem;
 
-namespace BOF.CampaignSystem.CampaignSystem
+namespace BOF.Overhaul.CampaignSystem
 {
     public class Hero : MBObjectBase, ITrackableCampaignObject, ITrackableBase
     {
@@ -195,7 +195,7 @@ namespace BOF.CampaignSystem.CampaignSystem
         }
 
         public bool CanHaveRecruits =>
-            TaleWorlds.CampaignSystem.Campaign.Current.Models.VolunteerProductionModel.CanHaveRecruits(this);
+            BOFCampaign.Current.Models.VolunteerProductionModel.CanHaveRecruits(this);
 
         public CharacterObject CharacterObject => this._characterObject;
 
@@ -222,7 +222,7 @@ namespace BOF.CampaignSystem.CampaignSystem
         public TextObject EncyclopediaText { get; set; }
 
         public string EncyclopediaLink =>
-            TaleWorlds.CampaignSystem.Campaign.Current.EncyclopediaManager.GetIdentifier(typeof(Hero)) + "-" +
+            BOFCampaign.Current.EncyclopediaManager.GetIdentifier(typeof(Hero)) + "-" +
             this.StringId ?? "";
 
         public TextObject EncyclopediaLinkWithName =>
@@ -458,7 +458,7 @@ namespace BOF.CampaignSystem.CampaignSystem
         }
 
         public bool IsChild => (double)this.Age <
-                               (double)TaleWorlds.CampaignSystem.Campaign.Current.Models.AgeModel.HeroComesOfAge;
+                               (double)BOFCampaign.Current.Models.AgeModel.HeroComesOfAge;
 
         public float Power => this._power;
 
@@ -837,9 +837,9 @@ namespace BOF.CampaignSystem.CampaignSystem
         public static Hero CreateHero(string stringID)
         {
             stringID =
-                TaleWorlds.CampaignSystem.Campaign.Current.CampaignObjectManager.FindNextUniqueStringId<Hero>(stringID);
+                BOFCampaign.Current.CampaignObjectManager.FindNextUniqueStringId<Hero>(stringID);
             Hero hero = new Hero(stringID);
-            TaleWorlds.CampaignSystem.Campaign.Current.CampaignObjectManager.AddHero(hero);
+            BOFCampaign.Current.CampaignObjectManager.AddHero(hero);
             return hero;
         }
 
@@ -954,7 +954,7 @@ namespace BOF.CampaignSystem.CampaignSystem
             }
 
             if (this.IsAlive && CampaignOptions.IsLifeDeathCycleDisabled && (double)this._defaultAge >=
-                (double)TaleWorlds.CampaignSystem.Campaign.Current.Models.AgeModel.MaxAge)
+                BOFCampaign.Current.Models.AgeModel.MaxAge)
             {
                 campaignTime = TaleWorlds.CampaignSystem.CampaignTime.Years(1084f) - this._birthDay;
                 this._defaultAge = (float)campaignTime.ToYears;
@@ -993,7 +993,7 @@ namespace BOF.CampaignSystem.CampaignSystem
             if (MBSaveLoad.LastLoadedGameVersion <=
                 ApplicationVersion.FromString("e1.6.5", ApplicationVersionGameType.Singleplayer) && this.IsAlive &&
                 (this.HeroState == Hero.CharacterStates.NotSpawned && this.LastSeenPlace != null && (double)this.Age >=
-                 (double)TaleWorlds.CampaignSystem.Campaign.Current.Models.AgeModel.HeroComesOfAge ||
+                 BOFCampaign.Current.Models.AgeModel.HeroComesOfAge ||
                  this.Occupation == Occupation.NotAssigned))
                 KillCharacterAction.ApplyByRemove(this);
             this.HeroDeveloper.AfterLoadInternal();
@@ -1063,7 +1063,7 @@ namespace BOF.CampaignSystem.CampaignSystem
         {
             Hero.CharacterStates heroState = this._heroState;
             this._heroState = newState;
-            TaleWorlds.CampaignSystem.Campaign.Current.CampaignObjectManager.HeroStateChanged(this, heroState);
+            BOFCampaign.Current.CampaignObjectManager.HeroStateChanged(this, heroState);
         }
 
         public bool IsHealthFull() => this.HitPoints >= this.CharacterObject.MaxHitPoints();
@@ -1082,7 +1082,7 @@ namespace BOF.CampaignSystem.CampaignSystem
         public void Heal(PartyBase party, int healAmount, bool addXp = false)
         {
             int effectedHealingAmount =
-                TaleWorlds.CampaignSystem.Campaign.Current.Models.PartyHealingModel.GetHeroesEffectedHealingAmount(this,
+                BOFCampaign.Current.Models.PartyHealingModel.GetHeroesEffectedHealingAmount(this,
                     (float)healAmount);
             this.HealByAmountInternal(party, effectedHealingAmount, addXp);
         }
@@ -1164,7 +1164,7 @@ namespace BOF.CampaignSystem.CampaignSystem
                         .ToString();
             }
 
-            List<Kingdom> list = TaleWorlds.CampaignSystem.Campaign.Current.Kingdoms
+            List<Kingdom> list = BOFCampaign.Current.Kingdoms
                 .Where<Kingdom>((Func<Kingdom, bool>)(x => x.Culture == o.MapFaction.Culture)).ToList<Kingdom>();
             if (list.Count > 1)
                 MBTextManager.SetTextVariable("RULER", o.MapFaction.Leader.Name, false);
@@ -1197,7 +1197,7 @@ namespace BOF.CampaignSystem.CampaignSystem
 
         public bool CanMarry()
         {
-            if (!TaleWorlds.CampaignSystem.Campaign.Current.Models.MarriageModel.IsSuitableForMarriage(this))
+            if (!BOFCampaign.Current.Models.MarriageModel.IsSuitableForMarriage(this))
                 return false;
             bool result = true;
             CampaignEventDispatcher.Instance.CanHeroMarry(this, ref result);

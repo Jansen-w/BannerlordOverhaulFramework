@@ -1,7 +1,7 @@
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 
-namespace BOF.CampaignSystem.Core
+namespace BOF.Overhaul.Core
 {
   public class DefaultCharacterAttributes
   {

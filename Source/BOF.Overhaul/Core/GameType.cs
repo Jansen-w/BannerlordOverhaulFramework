@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using TaleWorlds.Core;
 using TaleWorlds.ObjectSystem;
 
-namespace BOF.CampaignSystem.Core
+namespace BOF.Overhaul.Core
 {
   public abstract class GameType
   {

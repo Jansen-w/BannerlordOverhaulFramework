@@ -7,7 +7,7 @@
         <ProjectGuid>{963F3C8B-D0E3-4B58-8531-DE92CF3E8069}</ProjectGuid>
         <OutputType>Library</OutputType>
         <AppDesignerFolder>Properties</AppDesignerFolder>
-        <RootNamespace>BOF.CampaignSystem</RootNamespace>
+        <RootNamespace>BOF.Overhaul</RootNamespace>
         <AssemblyName>BOF.Overhaul</AssemblyName>
         <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
@@ -70,14 +70,19 @@
         <Compile Include="CampaignSystem\CharacterObject.cs" />
         <Compile Include="CampaignSystem\CharacterStatsModel.cs" />
         <Compile Include="CampaignSystem\Clan.cs" />
+        <Compile Include="CampaignSystem\ClanTierModel.cs" />
         <Compile Include="CampaignSystem\ConversationManager.cs" />
         <Compile Include="CampaignSystem\ConversationSentence.cs" />
+        <Compile Include="CampaignSystem\CrimeModel.cs" />
         <Compile Include="CampaignSystem\CultureObject.cs" />
         <Compile Include="CampaignSystem\DialogFlow.cs" />
         <Compile Include="CampaignSystem\DialogFlowContext.cs" />
         <Compile Include="CampaignSystem\DialogFlowLine.cs" />
+        <Compile Include="CampaignSystem\FactionManagerStancesData.cs" />
+        <Compile Include="CampaignSystem\Fief.cs" />
         <Compile Include="CampaignSystem\GameModels.cs" />
         <Compile Include="CampaignSystem\Hero.cs" />
+        <Compile Include="CampaignSystem\Hideout.cs" />
         <Compile Include="CampaignSystem\IFaction.cs" />
         <Compile Include="CampaignSystem\ILocatable.cs" />
         <Compile Include="CampaignSystem\Kingdom.cs" />
@@ -89,9 +94,17 @@
         <Compile Include="CampaignSystem\MapTimeTracker.cs" />
         <Compile Include="CampaignSystem\MobileParty.cs" />
         <Compile Include="CampaignSystem\PartyBase.cs" />
+        <Compile Include="CampaignSystem\PartyComponent.cs" />
         <Compile Include="CampaignSystem\PartyImpairmentModel.cs" />
+        <Compile Include="CampaignSystem\PartyTroopUpgradeModel.cs" />
+        <Compile Include="CampaignSystem\PrisonerRecruitmentCalculationModel.cs" />
         <Compile Include="CampaignSystem\Settlement.cs" />
         <Compile Include="CampaignSystem\SettlementComponent.cs" />
+        <Compile Include="CampaignSystem\StanceLink.cs" />
+        <Compile Include="CampaignSystem\StanceType.cs" />
+        <Compile Include="CampaignSystem\Town.cs" />
+        <Compile Include="CampaignSystem\TroopRosterElement.cs" />
+        <Compile Include="CampaignSystem\WarPartyComponent.cs" />
         <Compile Include="Core\BasicCharacterObject.cs" />
         <Compile Include="Core\BasicCultureObject.cs" />
         <Compile Include="Core\CultureObject.cs" />
@@ -101,7 +114,11 @@
         <Compile Include="Core\GameManagerBase.cs" />
         <Compile Include="Core\GameManagerComponent.cs" />
         <Compile Include="Core\GameType.cs" />
+        <Compile Include="Core\ICharacterData.cs" />
         <Compile Include="Core\WeaponDescription.cs" />
+        <Compile Include="Helpers\CharacterHelper.cs" />
+        <Compile Include="Helpers\FactionManager.cs" />
+        <Compile Include="Helpers\SettlementHelper.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
     <ItemGroup>

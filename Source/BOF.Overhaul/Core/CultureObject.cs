@@ -8,7 +8,7 @@ using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.ObjectSystem;
 
-namespace BOF.CampaignSystem.Core
+namespace BOF.Overhaul.Core
 {
   public sealed class CultureObject : BasicCultureObject
   {

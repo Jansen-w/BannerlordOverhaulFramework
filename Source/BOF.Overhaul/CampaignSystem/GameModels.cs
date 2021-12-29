@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 
-namespace BOF.CampaignSystem.CampaignSystem
+namespace BOF.Overhaul.CampaignSystem
 {
-    public sealed class GameModels : GameModelsManager
+    public class GameModels : GameModelsManager
     {
         public MapVisibilityModel MapVisibilityModel { get; private set; }
 

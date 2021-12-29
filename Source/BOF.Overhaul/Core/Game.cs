@@ -6,7 +6,7 @@ using TaleWorlds.Library.EventSystem;
 using TaleWorlds.ModuleManager;
 using TaleWorlds.ObjectSystem;
 
-namespace BOF.CampaignSystem.Core
+namespace BOF.Overhaul.Core
 {
     // [SaveableRootClass(5000)]
     public class Game : IGameStateManagerOwner

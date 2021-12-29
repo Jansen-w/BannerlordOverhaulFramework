@@ -7,9 +7,9 @@ using TaleWorlds.Library;
 using TaleWorlds.LinQuick;
 using TaleWorlds.Localization;
 
-namespace BOF.CampaignSystem.CampaignSystem
+namespace BOF.Overhaul.CampaignSystem
 {
-  public sealed class PartyBase : IBattleCombatant
+  public class PartyBase : IBattleCombatant
   {
     private static readonly HashSet<TerrainType> ValidTerrainTypes = new HashSet<TerrainType>()
     {
@@ -74,17 +74,17 @@ namespace BOF.CampaignSystem.CampaignSystem
       this.MapEvent?.PartyVisibilityChanged(this, value);
       CampaignEventDispatcher.Instance.OnPartyVisibilityChanged(this);
       this.Visuals?.SetVisualVisible(value);
-      if (Campaign.Current.Models.MapVisibilityListener == null)
+      if (BOFCampaign.Current.Models.MapVisibilityListener == null)
         return;
       if (!value)
       {
-        Campaign.Current.Models.MapVisibilityListener.OnPartySightLost(this);
+        BOFCampaign.Current.Models.MapVisibilityListener.OnPartySightLost(this);
       }
       else
       {
         if (!value)
           return;
-        Campaign.Current.Models.MapVisibilityListener.OnPartySighted(this);
+        BOFCampaign.Current.Models.MapVisibilityListener.OnPartySighted(this);
       }
     }
 
@@ -268,7 +268,7 @@ namespace BOF.CampaignSystem.CampaignSystem
         if (this._partyMemberSizeLastCheckVersion != versionNo || this._cachedPartyMemberSizeLimit == 0)
         {
           this._partyMemberSizeLastCheckVersion = versionNo;
-          this._cachedPartyMemberSizeLimit = (int) Campaign.Current.Models.PartySizeLimitModel.GetPartyMemberSizeLimit(this).ResultNumber;
+          this._cachedPartyMemberSizeLimit = (int) BOFCampaign.Current.Models.PartySizeLimitModel.GetPartyMemberSizeLimit(this).ResultNumber;
         }
         return this._cachedPartyMemberSizeLimit;
       }
@@ -282,15 +282,15 @@ namespace BOF.CampaignSystem.CampaignSystem
         if (this._prisonerSizeLastCheckVersion != versionNo || this._cachedPrisonerSizeLimit == 0)
         {
           this._prisonerSizeLastCheckVersion = versionNo;
-          this._cachedPrisonerSizeLimit = (int) Campaign.Current.Models.PartySizeLimitModel.GetPartyPrisonerSizeLimit(this).ResultNumber;
+          this._cachedPrisonerSizeLimit = (int) BOFCampaign.Current.Models.PartySizeLimitModel.GetPartyPrisonerSizeLimit(this).ResultNumber;
         }
         return this._cachedPrisonerSizeLimit;
       }
     }
 
-    public ExplainedNumber PartySizeLimitExplainer => Campaign.Current.Models.PartySizeLimitModel.GetPartyMemberSizeLimit(this, true);
+    public ExplainedNumber PartySizeLimitExplainer => BOFCampaign.Current.Models.PartySizeLimitModel.GetPartyMemberSizeLimit(this, true);
 
-    public ExplainedNumber PrisonerSizeLimitExplainer => Campaign.Current.Models.PartySizeLimitModel.GetPartyPrisonerSizeLimit(this, true);
+    public ExplainedNumber PrisonerSizeLimitExplainer => BOFCampaign.Current.Models.PartySizeLimitModel.GetPartyPrisonerSizeLimit(this, true);
 
     public int NumberOfHealthyMembers => this.MemberRoster.TotalManCount - this.MemberRoster.TotalWounded;
 
@@ -374,7 +374,7 @@ namespace BOF.CampaignSystem.CampaignSystem
       return this._numberOfHealthyMenPerTier[tier];
     }
 
-    public int InventoryCapacity => this.MobileParty == null ? 100 : (int) Campaign.Current.Models.InventoryCapacityModel.CalculateInventoryCapacity(this.MobileParty).ResultNumber;
+    public int InventoryCapacity => this.MobileParty == null ? 100 : (int) BOFCampaign.Current.Models.InventoryCapacityModel.CalculateInventoryCapacity(this.MobileParty).ResultNumber;
 
     public float TotalStrength
     {
@@ -400,7 +400,7 @@ namespace BOF.CampaignSystem.CampaignSystem
 
     private PartyBase(MobileParty mobileParty, Settlement settlement)
     {
-      this.Index = Campaign.Current.GeneratePartyId(this);
+      this.Index = BOFCampaign.Current.GeneratePartyId(this);
       this.MobileParty = mobileParty;
       this.Settlement = settlement;
       this.Random = new DeterministicRandom(this.IsSettlement ? 23 : 5);
@@ -410,7 +410,7 @@ namespace BOF.CampaignSystem.CampaignSystem
       this.MemberRoster.NumberChangedCallback = new NumberChangedCallback(this.MemberRosterNumberChanged);
       this.PrisonRoster.NumberChangedCallback = new NumberChangedCallback(this.PrisonRosterNumberChanged);
       this.PrisonRoster.IsPrisonRoster = true;
-      this._visual = Campaign.Current.VisualCreator.CreatePartyVisual();
+      this._visual = BOFCampaign.Current.VisualCreator.CreatePartyVisual();
     }
 
     private void RecalculateNumberOfMenWithHorses()
@@ -457,7 +457,7 @@ namespace BOF.CampaignSystem.CampaignSystem
         position.x = centerPosition.x + (float) ((double) MBRandom.RandomFloat * (double) radius * 2.0) - radius;
         position.y = centerPosition.y + (float) ((double) MBRandom.RandomFloat * (double) radius * 2.0) - radius;
       }
-      while (!Campaign.Current.MapSceneWrapper.AreFacesOnSameIsland(Campaign.Current.MapSceneWrapper.GetFaceIndex(position), Campaign.Current.MapSceneWrapper.GetFaceIndex(centerPosition), false));
+      while (!BOFCampaign.Current.MapSceneWrapper.AreFacesOnSameIsland(Campaign.Current.MapSceneWrapper.GetFaceIndex(position), Campaign.Current.MapSceneWrapper.GetFaceIndex(centerPosition), false));
       if (!this.IsMobile)
         return;
       this.MobileParty.Position2D = position;

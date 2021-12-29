@@ -10,7 +10,7 @@ using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.ObjectSystem;
 
-namespace BOF.CampaignSystem.CampaignSystem
+namespace BOF.Overhaul.CampaignSystem
 {
   public class Settlement : 
     MBObjectBase,
@@ -188,7 +188,7 @@ namespace BOF.CampaignSystem.CampaignSystem
     //[SaveableProperty(121)]
     public float SettlementHitPoints { get; internal set; }
 
-    public float MaxWallHitPoints => Campaign.Current.Models.WallHitPointCalculationModel.CalculateMaximumWallHitPoint(this.Town);
+    public float MaxWallHitPoints => BOFCampaign.Current.Models.WallHitPointCalculationModel.CalculateMaximumWallHitPoint(this.Town);
 
     public MBReadOnlyList<MobileParty> Parties { get; private set; }
 
@@ -204,7 +204,7 @@ namespace BOF.CampaignSystem.CampaignSystem
       private set
       {
         this._gatePosition = value;
-        Campaign current = Campaign.Current;
+        BOFCampaign current = BOFCampaign.Current;
         if (current.MapSceneWrapper == null)
           return;
         this.CurrentNavigationFace = current.MapSceneWrapper.GetFaceIndex(this._gatePosition);
@@ -217,7 +217,7 @@ namespace BOF.CampaignSystem.CampaignSystem
       private set
       {
         this._position = value;
-        Campaign.Current.SettlementLocator.UpdateParty(this);
+        BOFCampaign.Current.SettlementLocator.UpdateParty(this);
       }
     }
 
@@ -226,7 +226,7 @@ namespace BOF.CampaignSystem.CampaignSystem
     public Vec3 GetLogicalPosition()
     {
       float height = 0.0f;
-      Campaign.Current.MapSceneWrapper.GetHeightAtPoint(this.Position2D, ref height);
+      BOFCampaign.Current.MapSceneWrapper.GetHeightAtPoint(this.Position2D, ref height);
       return new Vec3(this.Position2D.x, this.Position2D.y, height);
     }
 
@@ -240,7 +240,7 @@ namespace BOF.CampaignSystem.CampaignSystem
 
     public TextObject EncyclopediaText { get; private set; }
 
-    public string EncyclopediaLink => Campaign.Current.EncyclopediaManager.GetIdentifier(typeof (Settlement)) + "-" + this.StringId ?? "";
+    public string EncyclopediaLink => BOFCampaign.Current.EncyclopediaManager.GetIdentifier(typeof (Settlement)) + "-" + this.StringId ?? "";
 
     public TextObject EncyclopediaLinkWithName => HyperlinkTexts.GetSettlementHyperlinkText(this.EncyclopediaLink, this.Name);
 
@@ -445,10 +445,10 @@ namespace BOF.CampaignSystem.CampaignSystem
         return;
       PartyBase partyBase = (PartyBase) null;
       float maximumDistance = 1E+07f;
-      foreach (MobileParty mobileParty in Campaign.Current.MobileParties)
+      foreach (MobileParty mobileParty in BOFCampaign.Current.MobileParties)
       {
         float distance;
-        if (mobileParty.MapFaction.IsBanditFaction && Campaign.Current.Models.MapDistanceModel.GetDistance(mobileParty, this, maximumDistance, out distance))
+        if (mobileParty.MapFaction.IsBanditFaction && BOFCampaign.Current.Models.MapDistanceModel.GetDistance(mobileParty, this, maximumDistance, out distance))
         {
           maximumDistance = distance;
           partyBase = mobileParty.Party;
@@ -497,7 +497,7 @@ namespace BOF.CampaignSystem.CampaignSystem
       float valueForFaction;
       if (!this._valueForFaction.TryGetValue(faction, out valueForFaction))
       {
-        valueForFaction = Campaign.Current.Models.SettlementValueModel.CalculateValueForFaction(this, faction);
+        valueForFaction = BOFCampaign.Current.Models.SettlementValueModel.CalculateValueForFaction(this, faction);
         this._valueForFaction.Add(faction, valueForFaction);
       }
       return valueForFaction;
@@ -512,17 +512,17 @@ namespace BOF.CampaignSystem.CampaignSystem
         {
           if (!kingdom.IsEliminated)
           {
-            float valueForFaction = Campaign.Current.Models.SettlementValueModel.CalculateValueForFaction(this, (IFaction) kingdom);
+            float valueForFaction = BOFCampaign.Current.Models.SettlementValueModel.CalculateValueForFaction(this, (IFaction) kingdom);
             this._valueForFaction.Add((IFaction) kingdom, valueForFaction);
           }
         }
-        this._valueForFaction.Add((IFaction) this.OwnerClan, Campaign.Current.Models.SettlementValueModel.CalculateValueForFaction(this, (IFaction) this.OwnerClan));
+        this._valueForFaction.Add((IFaction) this.OwnerClan, BOFCampaign.Current.Models.SettlementValueModel.CalculateValueForFaction(this, (IFaction) this.OwnerClan));
       }
       else
       {
         if (!this.IsVillage)
           return;
-        this._valueForFaction.Add(this.MapFaction, Campaign.Current.Models.SettlementValueModel.CalculateValueForFaction(this, this.MapFaction));
+        this._valueForFaction.Add(this.MapFaction, BOFCampaign.Current.Models.SettlementValueModel.CalculateValueForFaction(this, this.MapFaction));
       }
     }
 
@@ -605,7 +605,7 @@ namespace BOF.CampaignSystem.CampaignSystem
         this.Prosperity = (float) Convert.ToDouble(node.Attributes["prosperity"].Value);
       this.Culture = objectManager.ReadObjectReferenceFromXml<CultureObject>("culture", node);
       this.EncyclopediaText = node.Attributes["text"] != null ? new TextObject(node.Attributes["text"].Value) : TextObject.Empty;
-      if (Campaign.Current != null && Campaign.Current.MapSceneWrapper != null && !Campaign.Current.MapSceneWrapper.GetFaceIndex(this.Position2D).IsValid())
+      if (BOFCampaign.Current != null && BOFCampaign.Current.MapSceneWrapper != null && !BOFCampaign.Current.MapSceneWrapper.GetFaceIndex(this.Position2D).IsValid())
         Debug.Print("Center position of settlement(" + (object) this.GetName() + ") is invalid");
       foreach (XmlNode childNode1 in node.ChildNodes)
       {

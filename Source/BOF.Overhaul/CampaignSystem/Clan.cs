@@ -11,8 +11,9 @@ using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.ObjectSystem;
+using SettlementHelper = BOF.Overhaul.Helpers.SettlementHelper;
 
-namespace BOF.CampaignSystem.CampaignSystem
+namespace BOF.Overhaul.CampaignSystem
 {
     public class Clan : MBObjectBase, IFaction
     {
@@ -110,7 +111,7 @@ namespace BOF.CampaignSystem.CampaignSystem
             get
             {
                 TextObject empty = TextObject.Empty;
-                int minClanTier = Campaign.Current.Models.ClanTierModel.MinClanTier;
+                int minClanTier = BOFCampaign.Current.Models.ClanTierModel.MinClanTier;
                 TextObject textObject = minClanTier < this.Tier
                     ? (minClanTier + 1 != this.Tier
                         ? (minClanTier + 2 != this.Tier
@@ -170,7 +171,7 @@ namespace BOF.CampaignSystem.CampaignSystem
 
         public static Clan CreateClan(string stringID)
         {
-            stringID = Campaign.Current.CampaignObjectManager.FindNextUniqueStringId<Clan>(stringID);
+            stringID = BOFCampaign.Current.CampaignObjectManager.FindNextUniqueStringId<Clan>(stringID);
             Clan clan = new Clan();
             clan.StringId = stringID;
             BOFCampaign.Current.CampaignObjectManager.AddClan(clan);
@@ -250,7 +251,7 @@ namespace BOF.CampaignSystem.CampaignSystem
         public void OnGameCreated() => this.ValidateInitialPosition(this.InitialPosition);
 
         public string EncyclopediaLink =>
-            Campaign.Current.EncyclopediaManager.GetIdentifier(typeof(Clan)) + "-" + this.StringId;
+            BOFCampaign.Current.EncyclopediaManager.GetIdentifier(typeof(Clan)) + "-" + this.StringId;
 
         public bool IsNeutralClan => this == CampaignData.NeutralFaction;
 
@@ -318,7 +319,7 @@ namespace BOF.CampaignSystem.CampaignSystem
             this.Influence = 0.0f;
             if (this.Kingdom != null)
             {
-                foreach (Settlement settlement in Campaign.Current.Settlements)
+                foreach (Settlement settlement in BOFCampaign.Current.Settlements)
                 {
                     if (settlement.IsTown && settlement.OwnerClan == this)
                         SettlementHelper.TakeEnemyVillagersOutsideSettlements(settlement);
@@ -354,7 +355,7 @@ namespace BOF.CampaignSystem.CampaignSystem
         }
 
         public ExplainedNumber InfluenceChangeExplained =>
-            Campaign.Current.Models.ClanPoliticsModel.CalculateInfluenceChange(this, true);
+            BOFCampaign.Current.Models.ClanPoliticsModel.CalculateInfluenceChange(this, true);
 
         //[CachedData]
         public float TotalStrength { get; private set; }
@@ -424,7 +425,7 @@ namespace BOF.CampaignSystem.CampaignSystem
             set => this._basicTroop = value;
         }
 
-        public static Clan PlayerClan => Campaign.Current.PlayerDefaultFaction;
+        public static Clan PlayerClan => BOFCampaign.Current.PlayerDefaultFaction;
 
         public Hero Leader => this._leader;
 
@@ -456,18 +457,18 @@ namespace BOF.CampaignSystem.CampaignSystem
         public float MainHeroCrimeRating { get; set; }
 
         public float DailyCrimeRatingChange =>
-            Campaign.Current.Models.CrimeModel.GetDailyCrimeRatingChange((IFaction)this).ResultNumber;
+            BOFCampaign.Current.Models.CrimeModel.GetDailyCrimeRatingChange((IFaction)this).ResultNumber;
 
         public ExplainedNumber DailyCrimeRatingChangeExplained =>
-            Campaign.Current.Models.CrimeModel.GetDailyCrimeRatingChange((IFaction)this, true);
+            BOFCampaign.Current.Models.CrimeModel.GetDailyCrimeRatingChange((IFaction)this, true);
 
         public int Tier
         {
             get => this._tier;
             private set
             {
-                int minClanTier = Campaign.Current.Models.ClanTierModel.MinClanTier;
-                int maxClanTier = Campaign.Current.Models.ClanTierModel.MaxClanTier;
+                int minClanTier = BOFCampaign.Current.Models.ClanTierModel.MinClanTier;
+                int maxClanTier = BOFCampaign.Current.Models.ClanTierModel.MaxClanTier;
                 if (value > maxClanTier)
                     value = maxClanTier;
                 else if (value < minClanTier)
@@ -492,11 +493,11 @@ namespace BOF.CampaignSystem.CampaignSystem
             this.Leader != null && other.Leader != null ? this.Leader.GetRelation(other.Leader) : 0;
 
         public int RenownRequirementForNextTier =>
-            Campaign.Current.Models.ClanTierModel.GetRequiredRenownForTier(this.Tier + 1);
+            BOFCampaign.Current.Models.ClanTierModel.GetRequiredRenownForTier(this.Tier + 1);
 
-        public int CompanionLimit => Campaign.Current.Models.ClanTierModel.GetCompanionLimit(this);
+        public int CompanionLimit => BOFCampaign.Current.Models.ClanTierModel.GetCompanionLimit(this);
 
-        public int CommanderLimit => Campaign.Current.Models.ClanTierModel.GetPartyLimitForTier(this, this.Tier);
+        public int CommanderLimit => BOFCampaign.Current.Models.ClanTierModel.GetPartyLimitForTier(this, this.Tier);
 
         public bool IsAtWarWith(IFaction other) => FactionManager.IsAtWarAgainstFaction((IFaction)this, other);
 
@@ -556,7 +557,7 @@ namespace BOF.CampaignSystem.CampaignSystem
         {
             float num = 0.0f;
             foreach (Town fief in this.Fiefs)
-                num += Campaign.Current.Models.SettlementValueModel.CalculateValueForFaction(fief.Owner.Settlement,
+                num += BOFCampaign.Current.Models.SettlementValueModel.CalculateValueForFaction(fief.Owner.Settlement,
                     (IFaction)kingdom);
             return num;
         }
@@ -609,7 +610,7 @@ namespace BOF.CampaignSystem.CampaignSystem
             this.SetLeader(objectManager.ReadObjectReferenceFromXml("owner", typeof(Hero), node) as Hero);
             this.Kingdom = (Kingdom)objectManager.ReadObjectReferenceFromXml("super_faction", typeof(Kingdom), node);
             this.Tier = node.Attributes["tier"] == null ? 1 : Convert.ToInt32(node.Attributes["tier"].Value);
-            this.Renown = (float)Campaign.Current.Models.ClanTierModel.CalculateInitialRenown(this);
+            this.Renown = (float)BOFCampaign.Current.Models.ClanTierModel.CalculateInitialRenown(this);
             this.InitializeClan(new TextObject(node.Attributes["name"].Value),
                 node.Attributes["short_name"] != null
                     ? new TextObject(node.Attributes["short_name"].Value)
@@ -747,13 +748,13 @@ namespace BOF.CampaignSystem.CampaignSystem
         public static IEnumerable<Clan> FindAll(Predicate<Clan> predicate) =>
             Clan.All.Where<Clan>((Func<Clan, bool>)(x => predicate(x)));
 
-        public static MBReadOnlyList<Clan> All => Campaign.Current.Clans;
+        public static MBReadOnlyList<Clan> All => BOFCampaign.Current.Clans;
 
         public static IEnumerable<Clan> NonBanditFactions
         {
             get
             {
-                foreach (Clan clan in Campaign.Current.Clans)
+                foreach (Clan clan in BOFCampaign.Current.Clans)
                 {
                     if (!clan.IsBanditFaction && CampaignData.NeutralFaction != clan)
                         yield return clan;
@@ -765,7 +766,7 @@ namespace BOF.CampaignSystem.CampaignSystem
         {
             get
             {
-                foreach (Clan clan in Campaign.Current.Clans)
+                foreach (Clan clan in BOFCampaign.Current.Clans)
                 {
                     if (clan.IsBanditFaction)
                         yield return clan;
@@ -866,7 +867,7 @@ namespace BOF.CampaignSystem.CampaignSystem
             if ((double)value <= 0.0)
                 return;
             this.Renown += value;
-            int tier = Campaign.Current.Models.ClanTierModel.CalculateTier(this);
+            int tier = BOFCampaign.Current.Models.ClanTierModel.CalculateTier(this);
             if (tier <= this.Tier)
                 return;
             this.Tier = tier;
@@ -876,13 +877,13 @@ namespace BOF.CampaignSystem.CampaignSystem
         public void ResetClanRenown()
         {
             this.Renown = 0.0f;
-            this.Tier = Campaign.Current.Models.ClanTierModel.CalculateTier(this);
+            this.Tier = BOFCampaign.Current.Models.ClanTierModel.CalculateTier(this);
             CampaignEventDispatcher.Instance.OnClanTierChanged(this, false);
         }
 
         public void OnSupportedByClan(Clan supporterClan)
         {
-            DiplomacyModel diplomacyModel = Campaign.Current.Models.DiplomacyModel;
+            DiplomacyModel diplomacyModel = BOFCampaign.Current.Models.DiplomacyModel;
             int ofSupportingClan1 = diplomacyModel.GetInfluenceCostOfSupportingClan();
             if ((double)supporterClan.Influence < (double)ofSupportingClan1)
                 return;
@@ -909,7 +910,7 @@ namespace BOF.CampaignSystem.CampaignSystem
             clan.Color = settlement.MapFaction.Color2;
             clan.Color2 = settlement.MapFaction.Color;
             clan.IsRebelClan = true;
-            clan.Tier = Campaign.Current.Models.ClanTierModel.RebelClanStartingTier;
+            clan.Tier = BOFCampaign.Current.Models.ClanTierModel.RebelClanStartingTier;
             clan.BannerBackgroundColorPrimary = settlement.MapFaction.Banner.GetFirstIconColor();
             clan.BannerBackgroundColorSecondary = settlement.MapFaction.Banner.GetFirstIconColor();
             clan.BannerIconColor = settlement.MapFaction.Banner.GetPrimaryColor();
@@ -929,7 +930,7 @@ namespace BOF.CampaignSystem.CampaignSystem
                 Banner.CreateOneColoredBannerWithOneIcon(settlement.MapFaction.Banner.GetFirstIconColor(),
                     settlement.MapFaction.Banner.GetPrimaryColor(), newClanIconId), settlement.GatePosition);
             clan.Kingdom = Hero.MainHero.Clan.Kingdom;
-            clan.Tier = Campaign.Current.Models.ClanTierModel.CompanionToLordClanStartingTier;
+            clan.Tier = BOFCampaign.Current.Models.ClanTierModel.CompanionToLordClanStartingTier;
             hero.Clan = clan;
             clan.SetLeader(hero);
             ChangeOwnerOfSettlementAction.ApplyByGift(settlement, hero);
@@ -986,7 +987,7 @@ namespace BOF.CampaignSystem.CampaignSystem
         public Dictionary<Hero, int> GetHeirApparents()
         {
             Dictionary<Hero, int> dictionary = new Dictionary<Hero, int>();
-            int heroComesOfAge = Campaign.Current.Models.AgeModel.HeroComesOfAge;
+            int heroComesOfAge = BOFCampaign.Current.Models.AgeModel.HeroComesOfAge;
             Hero leader = this.Leader;
             foreach (Hero hero in this.Leader.Clan.Heroes)
             {
@@ -994,14 +995,14 @@ namespace BOF.CampaignSystem.CampaignSystem
                     !hero.IsNotable && (double)hero.Age >= (double)heroComesOfAge)
                 {
                     int heirSelectionPoint =
-                        Campaign.Current.Models.HeirSelectionCalculationModel.CalculateHeirSelectionPoint(hero,
+                        BOFCampaign.Current.Models.HeirSelectionCalculationModel.CalculateHeirSelectionPoint(hero,
                             this.Leader, ref leader);
                     dictionary.Add(hero, heirSelectionPoint);
                 }
             }
 
             if (leader != this.Leader)
-                dictionary[leader] += Campaign.Current.Models.HeirSelectionCalculationModel.HighestSkillPoint;
+                dictionary[leader] += BOFCampaign.Current.Models.HeirSelectionCalculationModel.HighestSkillPoint;
             return dictionary;
         }
 

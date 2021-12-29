@@ -4,11 +4,11 @@ using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
-using BasicCultureObject = BOF.CampaignSystem.Core.BasicCultureObject;
+using BasicCultureObject = BOF.Overhaul.Core.BasicCultureObject;
 
-namespace BOF.CampaignSystem.CampaignSystem
+namespace BOF.Overhaul.CampaignSystem
 {
-  public class CultureObject : BasicCultureObject
+  public class CultureObject : Core.BasicCultureObject
   {
     private List<TextObject> _maleNameList;
     private List<TextObject> _femaleNameList;
